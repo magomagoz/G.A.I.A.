@@ -8,7 +8,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Diabete Dashboard", layout="wide")
 st.image("banner.png")
-st.title("🩺 Assistente Diabetico")
+#st.title("🩺 Assistente Diabetico")
 
 # Tab Layout
 tab1, tab2, tab3 = st.tabs(["Dashboard", "Calcolatore Pasti", "Analisi Trend"])
@@ -19,16 +19,16 @@ with tab1:
         df = elabora_dati(pd.read_csv(uploaded_file, skiprows=1))
         m = calcola_metriche(df, 70, 180)
         col1, col2, col3 = st.columns(3)
-        col1.metric("TIR", f"{m['TIR']:.1f}%")
-        col2.metric("Ipo", f"{m['IPO']:.1f}%")
-        col3.metric("Iper", f"{m['IPER']:.1f}%")
+        col1.metric("Time In Range (70-180", f"{m['TIR']:.1f}%")
+        col2.metric("Ipoglicemie", f"{m['IPO']:.1f}%")
+        col3.metric("Iperglicemie", f"{m['IPER']:.1f}%")
         
-        st.subheader("Suggerimenti Clinici")
+        st.subheader("🩺 Suggerimenti Clinici")
         for s in genera_suggerimenti(df):
             st.info(s)
 
 with tab2:
-    st.subheader("🍽️ Calcolatore Pasti Avanzato")
+    st.subheader("🍽️ Calcolatore Pasti")
     
     # 1. Input di data, ora e glicemia attuale
     col_a, col_b, col_c = st.columns(3)
