@@ -3,30 +3,29 @@ from datetime import datetime
 import json
 import streamlit as st
 import pandas as pd
-from utils import elabora_dati, calcola_metriche, genera_suggerimenti
+from utils import (
+    elabora_dati, calcola_metriche, genera_suggerimenti, 
+    suggerisci_aggiustamento_ic # Assicurati di averla in utils.py
+)
 import plotly.express as px
 
 st.set_page_config(page_title="Diabete Dashboard", layout="wide")
-st.image("banner.png")
-#st.title("🩺 Assistente Diabetico")
 
-#div.stButton > button, div.stDownloadButton > button {width: 100% !important}
-
+# CSS per bottoni uniformi
 st.markdown("""
     <style>
-    /* Forza tutti i bottoni e i file_uploader ad avere lo stesso stile */
     div.stButton > button, div.stDownloadButton > button, div.stFileUploader > section {
         background-color: #f0f2f6 !important;
         border: 1px solid #d3d3d3 !important;
         border-radius: 5px !important;
         color: #31333F !important;
         width: 100% !important;
+        height: 45px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Tab Layout
-tab1, tab2, tab3 = st.tabs(["Dashboard", "Calcolatore Pasti", "Analisi Trend"])
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🍽️ Calcolatore Pasti", "📈 Analisi Trend"])
 
 with tab1:
     uploaded_file = st.file_uploader("Carica il tuo CSV LibreView", type="csv")
@@ -34,7 +33,7 @@ with tab1:
         df = elabora_dati(pd.read_csv(uploaded_file, skiprows=1))
         m = calcola_metriche(df, 70, 180)
         col1, col2, col3 = st.columns(3)
-        col1.metric("Time In Range (70-180)", f"{m['TIR']:.1f}%")
+        col1.metric("Time In Range", f"{m['TIR']:.1f}%")
         col2.metric("Ipoglicemie", f"{m['IPO']:.1f}%")
         col3.metric("Iperglicemie", f"{m['IPER']:.1f}%")
         
@@ -45,159 +44,89 @@ with tab1:
 with tab2:
     st.subheader("🍽️ Calcolatore Pasti & Bolo")
 
-    # --- SEZIONE PARAMETRI MEDICI (Persistente nell'interfaccia) ---
     with st.expander("⚙️ Parametri Basale e Sensibilità (Toujeo)"):
         col_p1, col_p2 = st.columns(2)
-        # Inserisci le tue 36 unità di Toujeo
         basale_u = col_p1.number_input("Unità Toujeo (Basale)", value=36, step=1)
-        
-        # Calcolo stimato dell'Insulina Totale Giornaliera (TDI)
-        # Generalmente la basale è circa il 50% del totale giornaliero
         tdi = basale_u * 2 
-        
-        # Regola del 500 per I:C e Regola del 1800 per ISF (Fattore di Sensibilità)
         ic_calc = round(500 / tdi, 1)
         isf_calc = round(1800 / tdi, 1)
-        
-        st.caption(f"Basato su {basale_u}U di Toujeo: il tuo Rapporto I:C stimato è 1:{ic_calc} e il tuo ISF è {isf_calc} mg/dL.")
-        target_glicemico = col_p2.number_input("Target Glicemia (mg/dL)", value=150)
+        st.caption(f"Rapporto I:C stimato: 1:{ic_calc} | ISF: {isf_calc} mg/dL")
+        target_glicemico = col_p2.number_input("Target Glicemia (mg/dL)", value=120)
 
-    # --- INPUT MISURAZIONE ATTUALE ---
     col_a, col_b, col_c, col_d = st.columns([2, 2, 3, 2])
-    data_p = col_a.date_input("Data", datetime.now().date())
-    ora_p = col_b.time_input("Ora", datetime.now().time())
-    glic_pre = col_c.number_input("Glicemia attuale (mg/dL)", value=120)
-    
-    # Menu Trend del Libre
-    trend_libre = col_d.selectbox("Trend Libre", [
-        "➡️ Stabile", "↗️ Salita lenta", "⬆️ Salita veloce", "↘️ Discesa lenta", "⬇️ Discesa veloce"
-    ])
+    data_pasto = col_a.date_input("Data", datetime.now().date())
+    ora_pasto = col_b.time_input("Ora", datetime.now().time())
+    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", value=120)
+    trend_libre = col_d.selectbox("Trend Libre", ["➡️ Stabile", "↗️ Salita lenta", "⬆️ Salita veloce", "↘️ Discesa lenta", "⬇️ Discesa veloce"])
 
     tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
-    # 2. Caricamento del database alimenti
-    # Creiamo un dizionario di default nel caso il file non esista ancora
+
     try:
         with open('alimenti.json', 'r') as f:
             db_alimenti = json.load(f)
     except FileNotFoundError:
-        db_alimenti = {"Barretta Kinder": 12, "Succo di frutta": 20, "Panino medio": 45, "Mela": 15}
+        db_alimenti = {"Pane": 50, "Pasta": 70, "Mela": 15}
     
-    # Trasformiamo il dizionario in un DataFrame Pandas per la tabella
     df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati (g)"])
-    # Aggiungiamo una colonna di Checkbox all'inizio, impostata su False di default
     df_alimenti.insert(0, "Seleziona", False)
     
-    st.write("Seleziona gli alimenti dal menu:")
+    edited_df = st.data_editor(df_alimenti, hide_index=True, use_container_width=True)
     
-    # 3. Tabella interattiva con quadratini da flaggare
-    edited_df = st.data_editor(
-        df_alimenti,
-        hide_index=True, # Nasconde i numeri di riga per estetica
-        use_container_width=True,
-        column_config={
-            "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
-            "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
-            "Carboidrati (g)": st.column_config.NumberColumn("Carboidrati (g)", disabled=True)
-        }
-    )
-    
-    # Input per il rapporto Insulina:Carboidrati
-    ic = st.number_input("Tuo rapporto I:C (es. 1 U ogni n gr.)", value=10)
-
-    # 4. Tasto di calcolo aggiornato
-    if st.button("Calcola glucosio"):
+    if st.button("Calcola Dose Consigliata"):
         alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
         
         if alimenti_selezionati.empty:
-            st.warning("Per favore, scegli almeno un alimento dalla tabella.")
+            st.warning("Per favore, scegli almeno un alimento.")
         else:
-            
-            # Calcolo dei totali
             tot_carbs = alimenti_selezionati["Carboidrati (g)"].sum()
-            #dose_suggerita = tot_carbs / ic
-            dose_carboidrati = tot_carbs / ic
+            dose_carboidrati = tot_carbs / ic_calc
         
-            # 2. Logica dei Trend
             modifica_trend = 0.0
-            if trend == "⬆️ Salita veloce": modifica_trend = 1.5
-            elif trend == "↗️ Salita lenta": modifica_trend = 0.5
-            elif trend == "↘️ Discesa lenta": modifica_trend = -0.5
-            elif trend == "⬇️ Discesa veloce": modifica_trend = -1.5
+            if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.5
+            elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.5
+            elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.5
+            elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.5
             
-            # Dose correzione classica (se sopra 150)
-            correzione = (glicemia_pre - 120) / 50 if glicemia_pre > 150 else 0
+            correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
+            dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
             
-            dose_totale = dose_carboidrati + correzione + modifica_trend
-            
-            # Evitiamo dosi negative
-            if dose_totale < 0: dose_totale = 0
-            
-            # Mostriamo il dettaglio
             st.markdown("---")
-            col_res1, col_res2 = st.columns(2)
-            col_res1.metric("Dose Alimenti", f"{dose_carboidrati:.1f} U")
+            st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
             
-            # Colore diverso per la modifica trend
-            delta_color = "normal" if modifica_trend >= 0 else "inverse"
-            col_res2.metric("Aggiustamento Trend", f"{modifica_trend:+.1f} U", delta=modifica_trend, delta_color=delta_color)
-            
-            # Mostriamo i risultati
-            st.markdown("---")
-            st.write(f"**Riepilogo {tipo_pasto}:**")
-            st.write(f"📝 **Alimenti scelti:** {', '.join(alimenti_selezionati['Alimento'].tolist())}")
-            st.write(f"🍬 **Totale Carboidrati:** {tot_carbs} g")
-            if correzione > 0:
-                st.write(f"✨ **Correzione glicemia:** +{correzione:.1f} U")
-            st.success(f"💉 **Dose totale suggerita:** {dose_totale:.1f} unità di Novorapid")
-        
-            # --- SALVATAGGIO CON NUOVI DATI ---
+            # Salvataggio
             nuovo_record = pd.DataFrame([{
                 "Data_Ora": f"{data_pasto} {ora_pasto}",
                 "Glicemia_Pre": glicemia_pre,
                 "Tipo_Pasto": tipo_pasto,
                 "Alimenti": ', '.join(alimenti_selezionati['Alimento'].tolist()),
                 "Carboidrati_g": tot_carbs,
-                "Rapporto_IC": ic,
-                
+                "Rapporto_IC": ic_calc,
                 "Dose_Suggerita_U": round(dose_totale, 1)
             }])
             
             log_file = "log_pasti.csv"
-            # Se il file esiste, aggiungiamo la riga (append), altrimenti lo creiamo
             if os.path.exists(log_file):
                 nuovo_record.to_csv(log_file, mode='a', header=False, index=False)
             else:
                 nuovo_record.to_csv(log_file, mode='w', header=True, index=False)
-                
-            st.info("💾 Pasto salvato automaticamente nel tuo Diario Digitale!")
+            st.info("💾 Pasto salvato!")
 
 with tab3:
     st.subheader("📈 Analisi Trend e Gestione Diario")
-    
     col1, col2 = st.columns(2)
 
-    # --- IMPORTAZIONE ---
-    # Usiamo un placeholder per mantenere lo stile identico
-    uploaded_file = col1.file_uploader("📥 Importa Diario", type="csv", label_visibility="collapsed")
+    with col1:
+        uploaded_csv = st.file_uploader("📥 Importa CSV", type="csv", label_visibility="collapsed")
+        if uploaded_csv:
+            with open("log_pasti.csv", "wb") as f:
+                f.write(uploaded_csv.getbuffer())
+            st.rerun()
     
-    if uploaded_file:
-        with open("log_pasti.csv", "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        st.success("Diario aggiornato!")
-        st.rerun()
-    
-    # --- ESPORTAZIONE ---
-    if os.path.exists("log_pasti.csv"):
-        with open("log_pasti.csv", "rb") as f:
-            col1.download_button(
-                label="📥 Esporta Diario",
-                data=f,
-                file_name="log_pasti.csv",
-                mime="text/csv"
-            )
-        
-    st.markdown("---")
-    
+    with col2:
+        if os.path.exists("log_pasti.csv"):
+            with open("log_pasti.csv", "rb") as f:
+                st.download_button("📤 Esporta CSV", data=f, file_name="mio_diario.csv", mime="text/csv")
+            
     # 2. Visualizzazione del diario (solo se esiste)
     if os.path.exists("log_pasti.csv"):
         df_diario = pd.read_csv("log_pasti.csv")
