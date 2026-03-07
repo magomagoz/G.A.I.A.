@@ -42,7 +42,7 @@ with tab2:
     try:
         with open('alimenti.json', 'r') as f:
             db_alimenti = json.load(f)
-    #except FileNotFoundError:
+    except FileNotFoundError:
         db_alimenti = {"Barretta Kinder": 12, "Succo di frutta": 20, "Panino medio": 45, "Mela": 15}
     
     # Trasformiamo il dizionario in un DataFrame Pandas per la tabella
