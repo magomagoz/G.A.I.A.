@@ -122,7 +122,30 @@ with tab2:
 
 with tab3:
     st.subheader("📈 Analisi Trend Post-Prandiale")
+
+    #st.subheader("💾 Gestione Diario Pasti")
     
+    col_up, col_down = st.columns(2)
+    
+    # --- ESPORTAZIONE (Download) ---
+    if os.path.exists("log_pasti.csv"):
+        df_log = pd.read_csv("log_pasti.csv")
+        csv_data = df_log.to_csv(index=False).encode('utf-8')
+        col_down.download_button(
+            label="📥 Salva Diario",
+            data=csv_data,
+            file_name='mio_diario_pasti.csv',
+            mime='text/csv',
+        )
+    
+    # --- IMPORTAZIONE (Upload) ---
+    uploaded_log = col_up.file_uploader("Carica Diario", type="csv")
+    if uploaded_log is not None:
+        df_nuovo = pd.read_csv(uploaded_log)
+        df_nuovo.to_csv("log_pasti.csv", index=False)
+        st.success("✅ Diario caricato e salvato con successo!")
+        st.rerun() # Ricarica la pagina per mostrare i dati importati
+
     # Verifichiamo se esiste il diario dei pasti
     if os.path.exists("log_pasti.csv"):
         df_log = pd.read_csv("log_pasti.csv")
@@ -208,3 +231,4 @@ with tab3:
             st.warning(s)
     else:
         st.write("Registra almeno 3-4 pasti per attivare l'analisi automatica del rapporto I:C.")
+
