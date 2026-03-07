@@ -1,4 +1,17 @@
 import pandas as pd
+import json
+
+# Carica il database alimenti
+def get_carbs(nome_alimento):
+    with open('alimenti.json', 'r') as f:
+        db = json.load(f)
+    return db.get(nome_alimento, 0)
+
+def calcola_bolo_suggerito(alimento, rapporto_ic):
+    carbs = get_carbs(alimento)
+    # Esempio: se rapporto_ic è 1:10, significa 1 unità ogni 10g di carboidrati
+    dose = carbs / rapporto_ic
+    return dose
 
 def elabora_dati(df):
     # Pulizia nomi colonne e conversione date
