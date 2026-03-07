@@ -10,9 +10,7 @@ st.set_page_config(page_title="Diabete Dashboard", layout="wide")
 st.image("banner.png")
 #st.title("🩺 Assistente Diabetico")
 
-div.stButton > button, div.stDownloadButton > button {
-    width: 100% !important;
-}
+#div.stButton > button, div.stDownloadButton > button {width: 100% !important}
 
 st.markdown("""
     <style>
