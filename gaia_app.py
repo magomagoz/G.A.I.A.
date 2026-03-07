@@ -8,7 +8,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Diabete Dashboard", layout="wide")
 st.image("banner.png")
-st.title("🩺 Assistente Diabetico Personale")
+st.title("🩺 Assistente Diabetico")
 
 # Tab Layout
 tab1, tab2, tab3 = st.tabs(["Dashboard", "Calcolatore Pasti", "Analisi Trend"])
@@ -34,7 +34,7 @@ with tab2:
     col_a, col_b, col_c = st.columns(3)
     data_pasto = col_a.date_input("Data del pasto", datetime.now().date())
     ora_pasto = col_b.time_input("Ora del pasto", datetime.now().time())
-    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", min_value=30, max_value=600, value=120)
+    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", min_value=30, max_value=600, value=150)
     
     tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
     # 2. Caricamento del database alimenti
@@ -42,8 +42,8 @@ with tab2:
     try:
         with open('alimenti.json', 'r') as f:
             db_alimenti = json.load(f)
-    except FileNotFoundError:
-        db_alimenti = {"Barretta Kinder": 12, "Succo di frutta": 20, "Panino medio": 45, "Mela": 15}
+    #except FileNotFoundError:
+        #db_alimenti = {"Barretta Kinder": 12, "Succo di frutta": 20, "Panino medio": 45, "Mela": 15}
     
     # Trasformiamo il dizionario in un DataFrame Pandas per la tabella
     df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati (g)"])
@@ -65,14 +65,14 @@ with tab2:
     )
     
     # Input per il rapporto Insulina:Carboidrati
-    ic = st.number_input("Tuo rapporto I:C (es. 1 U ogni 10g)", value=10)
+    ic = st.number_input("Tuo rapporto I:C (es. 1 U ogni n gr.)", value=10)
     
     # 4. Tasto di calcolo aggiornato
-    if st.button("Calcola glucosio e bolo"):
+    if st.button("Calcola glucosio"):
         alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
         
         if alimenti_selezionati.empty:
-            st.warning("Per favore, flagga almeno un alimento dalla tabella.")
+            st.warning("Per favore, scegli almeno un alimento dalla tabella.")
         else:
             
             # Calcolo dei totali
