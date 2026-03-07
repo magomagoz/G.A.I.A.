@@ -80,8 +80,8 @@ with tab2:
             
             # Calcolo dei totali
             tot_carbs = alimenti_selezionati["Carboidrati (g)"].sum()
-            dose_suggerita = tot_carbs / ic
-            #dose_carboidrati = tot_carbs / ic
+            #dose_suggerita = tot_carbs / ic
+            dose_carboidrati = tot_carbs / ic
 
             # LOGICA DI CORREZIONE (opzionale): 
             # Se la glicemia è sopra 150, aggiungiamo una correzione semplificata (es: 1U ogni 50mg/dL sopra il target di 120)
