@@ -131,6 +131,8 @@ with tab3:
     # 2. Visualizzazione del diario (solo se esiste)
     if os.path.exists("log_pasti.csv"):
         df_diario = pd.read_csv("log_pasti.csv")
+        df_log = pd.read_csv("log_pasti.csv") # Assicurati che questa riga ci sia!
+    
         st.write("**Il tuo storico pasti:**")
         st.dataframe(df_diario, use_container_width=True)
             
