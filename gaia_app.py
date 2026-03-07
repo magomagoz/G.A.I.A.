@@ -125,12 +125,20 @@ with tab3:
     
     # 1. Creiamo le due colonne per i pulsanti affiancati
     col1, col2 = st.columns(2)
-    
+        
+    # --- IMPORTAZIONE (Upload) ---
+    uploaded_file = col1.file_uploader("Carica Diario (CSV)", type="csv")
+    if uploaded_file is not None:
+        df_nuovo = pd.read_csv(uploaded_file)
+        df_nuovo.to_csv("log_pasti.csv", index=False)
+        st.success("✅ Diario aggiornato con successo!")
+        st.rerun() # Ricarica l'app per mostrare subito il nuovo diario
+
     # --- ESPORTAZIONE (Download) ---
     if os.path.exists("log_pasti.csv"):
         df_log = pd.read_csv("log_pasti.csv")
         csv_data = df_log.to_csv(index=False).encode('utf-8')
-        col1.download_button(
+        col2.download_button(
             label="📥 Esporta Diario (CSV)",
             data=csv_data,
             file_name='mio_diario_pasti.csv',
@@ -138,15 +146,7 @@ with tab3:
             use_container_width=True # Rende il bottone largo quanto la colonna
         )
     else:
-        col1.warning("Nessun dato da esportare.")
-        
-    # --- IMPORTAZIONE (Upload) ---
-    uploaded_file = col2.file_uploader("Carica Diario (CSV)", type="csv")
-    if uploaded_file is not None:
-        df_nuovo = pd.read_csv(uploaded_file)
-        df_nuovo.to_csv("log_pasti.csv", index=False)
-        st.success("✅ Diario aggiornato con successo!")
-        st.rerun() # Ricarica l'app per mostrare subito il nuovo diario
+        col2.warning("Nessun dato da esportare.")
     
     st.markdown("---")
     
