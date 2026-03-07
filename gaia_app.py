@@ -10,6 +10,19 @@ st.set_page_config(page_title="Diabete Dashboard", layout="wide")
 st.image("banner.png")
 #st.title("🩺 Assistente Diabetico")
 
+st.markdown("""
+    <style>
+    /* Forza tutti i bottoni e i file_uploader ad avere lo stesso stile */
+    div.stButton > button, div.stDownloadButton > button, div.stFileUploader > section {
+        background-color: #f0f2f6 !important;
+        border: 1px solid #d3d3d3 !important;
+        border-radius: 5px !important;
+        color: #31333F !important;
+        width: 100% !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Tab Layout
 tab1, tab2, tab3 = st.tabs(["Dashboard", "Calcolatore Pasti", "Analisi Trend"])
 
@@ -123,30 +136,27 @@ with tab2:
 with tab3:
     st.subheader("📈 Analisi Trend e Gestione Diario")
     
-    # 1. Creiamo le due colonne per i pulsanti affiancati
     col1, col2 = st.columns(2)
-        
-    # --- IMPORTAZIONE (Upload) ---
-    uploaded_file = col1.file_uploader("Carica Diario (CSV)", type="csv")
-    if uploaded_file is not None:
-        df_nuovo = pd.read_csv(uploaded_file)
-        df_nuovo.to_csv("log_pasti.csv", index=False)
-        st.success("✅ Diario aggiornato con successo!")
-        st.rerun() # Ricarica l'app per mostrare subito il nuovo diario
-
-    # --- ESPORTAZIONE (Download) ---
+    
+    # --- ESPORTAZIONE ---
     if os.path.exists("log_pasti.csv"):
-        df_log = pd.read_csv("log_pasti.csv")
-        csv_data = df_log.to_csv(index=False).encode('utf-8')
-        col2.download_button(
-            label="📥 Esporta Diario (CSV)",
-            data=csv_data,
-            file_name='mio_diario_pasti.csv',
-            mime='text/csv',
-            use_container_width=True # Rende il bottone largo quanto la colonna
-        )
-    else:
-        col2.warning("Nessun dato da esportare.")
+        with open("log_pasti.csv", "rb") as f:
+            col1.download_button(
+                label="📥 Esporta Diario",
+                data=f,
+                file_name="log_pasti.csv",
+                mime="text/csv"
+            )
+    
+    # --- IMPORTAZIONE ---
+    # Usiamo un placeholder per mantenere lo stile identico
+    uploaded_file = col2.file_uploader("📥 Importa Diario", type="csv", label_visibility="collapsed")
+    
+    if uploaded_file:
+        with open("log_pasti.csv", "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        st.success("Diario aggiornato!")
+        st.rerun()
     
     st.markdown("---")
     
