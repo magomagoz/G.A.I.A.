@@ -98,39 +98,39 @@ with tab2:
         tot_carbs = (selezione["Carboidrati_Unitari"] * selezione["Quantità"]).sum()
         dose_carboidrati = tot_carbs / ic_calc
         
-            modifica_trend = 0.0
-            if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.5
-            elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.5
-            elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.5
-            elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.5
+        modifica_trend = 0.0
+        if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.5
+        elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.5
+        elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.5
+        elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.5
             
-            correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
-            dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
+        correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
+        dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
             
-            st.markdown("---")
-            st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
+        st.markdown("---")
+        st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
 
-            # Creiamo una stringa descrittiva: "Supplì (x2), Pane (x1)"
-            descrizione_alimenti = ", ".join([
-                f"{row['Alimento']} (x{row['Quantità']})" for _, row in selezione.iterrows()
-            ])
+        # Creiamo una stringa descrittiva: "Supplì (x2), Pane (x1)"
+        descrizione_alimenti = ", ".join([
+            f"{row['Alimento']} (x{row['Quantità']})" for _, row in selezione.iterrows()
+        ])
             
-            nuovo_record = pd.DataFrame([{
-                "Data_Ora": f"{data_pasto} {ora_pasto}",
-                "Glicemia_Pre": glicemia_pre,
-                "Trend": trend_libre,
-                "Tipo_Pasto": tipo_pasto,
-                "Alimenti": descrizione_alimenti, # Ora include le quantità
-                "Carboidrati_g": tot_carbs,        # Questo è il totale già moltiplicato
-                "Rapporto_IC": ic_calc,
-                "Dose_Suggerita_U": round(dose_totale, 1)
-            }])
+        nuovo_record = pd.DataFrame([{
+            "Data_Ora": f"{data_pasto} {ora_pasto}",
+            "Glicemia_Pre": glicemia_pre,
+            "Trend": trend_libre,
+            "Tipo_Pasto": tipo_pasto,
+            "Alimenti": descrizione_alimenti, # Ora include le quantità
+            "Carboidrati_g": tot_carbs,        # Questo è il totale già moltiplicato
+            "Rapporto_IC": ic_calc,
+            "Dose_Suggerita_U": round(dose_totale, 1)
+        }])
             
-            log_file = "log_pasti.csv"
-            if os.path.exists(log_file):
-                nuovo_record.to_csv(log_file, mode='a', header=False, index=False)
-            else:
-                nuovo_record.to_csv(log_file, mode='w', header=True, index=False)
+        log_file = "log_pasti.csv"
+        if os.path.exists(log_file):
+            nuovo_record.to_csv(log_file, mode='a', header=False, index=False)
+        else:
+            nuovo_record.to_csv(log_file, mode='w', header=True, index=False)
             st.info("💾 Pasto salvato!")
 
 with tab3:
