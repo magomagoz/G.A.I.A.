@@ -68,3 +68,23 @@ def genera_suggerimenti(df, target_min=70, target_max=180):
         
     return suggerimenti
 
+def analizza_efficacia_bolo(df, soglia_iper=180):
+    """
+    Analizza cosa succede dopo l'assunzione di carboidrati.
+    """
+    # Filtra solo i momenti in cui hai mangiato
+    pasti = df[df['Carboidrati (grammi)'] > 0]
+    
+    report = []
+    for index, pasto in pasti.iterrows():
+        # Prendi i dati glicemici nelle 2 ore successive
+        time_limit = pasto['Timestamp'] + pd.Timedelta(hours=2)
+        trend_post_pasto = df[(df['Timestamp'] > pasto['Timestamp']) & 
+                              (df['Timestamp'] <= time_limit)]
+        
+        max_glicemia = trend_post_pasto['Glucosio'].max()
+        
+        if max_glicemia > soglia_iper:
+            report.append(f"Attenzione: dopo il pasto delle {pasto['Timestamp'].time()}, la glicemia è salita a {max_glicemia} mg/dL.")
+            
+    return report
