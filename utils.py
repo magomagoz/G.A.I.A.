@@ -10,6 +10,20 @@ def elabora_dati(df):
     df['Carboidrati (grammi)'] = pd.to_numeric(df['Carboidrati (grammi)'], errors='coerce').fillna(0)
     return df
 
+def suggerisci_aggiustamento_ic(df_log):
+    """
+    Analizza i pasti nel log e suggerisce se il rapporto I:C deve essere rivisto.
+    """
+    suggerimenti = []
+    # Raggruppiamo per tipo di pasto
+    for tipo in df_log['Tipo_Pasto'].unique():
+        subset = df_log[df_log['Tipo_Pasto'] == tipo]
+        if len(subset) > 3: # Analizziamo solo se abbiamo almeno 3-4 pasti per categoria
+            # Se la glicemia pre è spesso ok ma post è alta (semplificazione), suggeriamo
+            # (Qui potresti incrociare col file Libre, per ora usiamo la logica del log)
+            suggerimenti.append(f"💡 Analisi per {tipo}: Se noti trend alti post-pasto, valuta di diminuire leggermente il tuo rapporto I:C (es. da {subset['Rapporto_IC'].iloc[-1]} a {subset['Rapporto_IC'].iloc[-1] - 1}).")
+    return suggerimenti
+
 def calcola_iob(df, ora_attuale, durata_azione_insulina=4):
     """
     Calcola l'insulina ancora attiva (IOB) basandosi sull'ultima dose.
