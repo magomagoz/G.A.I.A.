@@ -60,7 +60,7 @@ with tab2:
         isf_calc = round(1800 / tdi, 1)
         
         st.caption(f"Basato su {basale_u}U di Toujeo: il tuo Rapporto I:C stimato è 1:{ic_calc} e il tuo ISF è {isf_calc} mg/dL.")
-        target_glicemico = col_p2.number_input("Target Glicemia (mg/dL)", value=120)
+        target_glicemico = col_p2.number_input("Target Glicemia (mg/dL)", value=150)
 
     # --- INPUT MISURAZIONE ATTUALE ---
     col_a, col_b, col_c, col_d = st.columns([2, 2, 3, 2])
@@ -73,35 +73,103 @@ with tab2:
         "➡️ Stabile", "↗️ Salita lenta", "⬆️ Salita veloce", "↘️ Discesa lenta", "⬇️ Discesa veloce"
     ])
 
-    # ... (Qui inserisci la tua tabella degli alimenti filtrata dal JSON) ...
+    tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
+    # 2. Caricamento del database alimenti
+    # Creiamo un dizionario di default nel caso il file non esista ancora
+    try:
+        with open('alimenti.json', 'r') as f:
+            db_alimenti = json.load(f)
+    except FileNotFoundError:
+        db_alimenti = {"Barretta Kinder": 12, "Succo di frutta": 20, "Panino medio": 45, "Mela": 15}
+    
+    # Trasformiamo il dizionario in un DataFrame Pandas per la tabella
+    df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati (g)"])
+    # Aggiungiamo una colonna di Checkbox all'inizio, impostata su False di default
+    df_alimenti.insert(0, "Seleziona", False)
+    
+    st.write("Seleziona gli alimenti dal menu:")
+    
+    # 3. Tabella interattiva con quadratini da flaggare
+    edited_df = st.data_editor(
+        df_alimenti,
+        hide_index=True, # Nasconde i numeri di riga per estetica
+        use_container_width=True,
+        column_config={
+            "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
+            "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
+            "Carboidrati (g)": st.column_config.NumberColumn("Carboidrati (g)", disabled=True)
+        }
+    )
+    
+    # Input per il rapporto Insulina:Carboidrati
+    ic = st.number_input("Tuo rapporto I:C (es. 1 U ogni n gr.)", value=10)
 
-    # --- LOGICA DI CALCOLO DEL BOLO ---
-    if st.button("Calcola Dose Consigliata", use_container_width=True):
-        # 1. Dose per Carboidrati
-        carb_totali = edited_df[edited_df["Seleziona"] == True]["Carboidrati (g)"].sum()
-        dose_carb = carb_totali / ic_calc
+    # 4. Tasto di calcolo aggiornato
+    if st.button("Calcola glucosio"):
+        alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
         
-        # 2. Dose di Correzione (se sei sopra il target)
-        dose_corr = (glic_pre - target_glicemico) / isf_calc if glic_pre > target_glicemico else 0
+        if alimenti_selezionati.empty:
+            st.warning("Per favore, scegli almeno un alimento dalla tabella.")
+        else:
+            
+            # Calcolo dei totali
+            tot_carbs = alimenti_selezionati["Carboidrati (g)"].sum()
+            #dose_suggerita = tot_carbs / ic
+            dose_carboidrati = tot_carbs / ic
         
-        # 3. Aggiustamento Trend (Basato sulla tua richiesta di +/- 0.5 o 1.5)
-        adj_trend = 0.0
-        if trend_libre == "⬆️ Salita veloce": adj_trend = 1.5
-        elif trend_libre == "↗️ Salita lenta": adj_trend = 0.5
-        elif trend_libre == "↘️ Discesa lenta": adj_trend = -0.5
-        elif trend_libre == "⬇️ Discesa veloce": adj_trend = -1.5
+            # 2. Logica dei Trend
+            modifica_trend = 0.0
+            if trend == "⬆️ Salita veloce": modifica_trend = 1.5
+            elif trend == "↗️ Salita lenta": modifica_trend = 0.5
+            elif trend == "↘️ Discesa lenta": modifica_trend = -0.5
+            elif trend == "⬇️ Discesa veloce": modifica_trend = -1.5
+            
+            # Dose correzione classica (se sopra 150)
+            correzione = (glicemia_pre - 120) / 50 if glicemia_pre > 150 else 0
+            
+            dose_totale = dose_carboidrati + correzione + modifica_trend
+            
+            # Evitiamo dosi negative
+            if dose_totale < 0: dose_totale = 0
+            
+            # Mostriamo il dettaglio
+            st.markdown("---")
+            col_res1, col_res2 = st.columns(2)
+            col_res1.metric("Dose Alimenti", f"{dose_carboidrati:.1f} U")
+            
+            # Colore diverso per la modifica trend
+            delta_color = "normal" if modifica_trend >= 0 else "inverse"
+            col_res2.metric("Aggiustamento Trend", f"{modifica_trend:+.1f} U", delta=modifica_trend, delta_color=delta_color)
+            
+            # Mostriamo i risultati
+            st.markdown("---")
+            st.write(f"**Riepilogo {tipo_pasto}:**")
+            st.write(f"📝 **Alimenti scelti:** {', '.join(alimenti_selezionati['Alimento'].tolist())}")
+            st.write(f"🍬 **Totale Carboidrati:** {tot_carbs} g")
+            if correzione > 0:
+                st.write(f"✨ **Correzione glicemia:** +{correzione:.1f} U")
+            st.success(f"💉 **Dose totale suggerita:** {dose_totale:.1f} unità di Novorapid")
         
-        dose_finale = max(0, dose_carb + dose_corr + adj_trend)
-        
-        # Visualizzazione Risultati
-        st.markdown("---")
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Carboidrati", f"{int(carb_totali)} g")
-        c2.metric("Correzione Trend", f"{adj_trend:+.1f} U")
-        c3.metric("BOLO TOTALE", f"{round(dose_finale, 1)} U", delta=f"{adj_trend} Trend")
-        
-        st.success(f"💉 Iniettare **{round(dose_finale, 1)} unità** di Novorapid.")
-
+            # --- SALVATAGGIO CON NUOVI DATI ---
+            nuovo_record = pd.DataFrame([{
+                "Data_Ora": f"{data_pasto} {ora_pasto}",
+                "Glicemia_Pre": glicemia_pre,
+                "Tipo_Pasto": tipo_pasto,
+                "Alimenti": ', '.join(alimenti_selezionati['Alimento'].tolist()),
+                "Carboidrati_g": tot_carbs,
+                "Rapporto_IC": ic,
+                
+                "Dose_Suggerita_U": round(dose_totale, 1)
+            }])
+            
+            log_file = "log_pasti.csv"
+            # Se il file esiste, aggiungiamo la riga (append), altrimenti lo creiamo
+            if os.path.exists(log_file):
+                nuovo_record.to_csv(log_file, mode='a', header=False, index=False)
+            else:
+                nuovo_record.to_csv(log_file, mode='w', header=True, index=False)
+                
+            st.info("💾 Pasto salvato automaticamente nel tuo Diario Digitale!")
 
 with tab3:
     st.subheader("📈 Analisi Trend e Gestione Diario")
