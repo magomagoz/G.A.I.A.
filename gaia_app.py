@@ -32,7 +32,7 @@ with tab1:
         df = elabora_dati(pd.read_csv(uploaded_file, skiprows=1))
         m = calcola_metriche(df, 70, 180)
         col1, col2, col3 = st.columns(3)
-        col1.metric("Time In Range (70-180", f"{m['TIR']:.1f}%")
+        col1.metric("Time In Range (70-180)", f"{m['TIR']:.1f}%")
         col2.metric("Ipoglicemie", f"{m['IPO']:.1f}%")
         col3.metric("Iperglicemie", f"{m['IPER']:.1f}%")
         
