@@ -9,7 +9,8 @@ from utils import (
 )
 import plotly.express as px
 
-st.set_page_config(page_title="Diabete Dashboard", layout="wide")
+st.image("banner.png")
+#st.set_page_config(page_title="Diabete Dashboard", layout="wide")
 
 # CSS per bottoni uniformi
 st.markdown("""
