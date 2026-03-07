@@ -11,17 +11,22 @@ def elabora_dati(df):
     return df
 
 def suggerisci_aggiustamento_ic(df_log):
-    """
-    Analizza i pasti nel log e suggerisce se il rapporto I:C deve essere rivisto.
-    """
     suggerimenti = []
+    
+    # Controllo di sicurezza: la colonna esiste?
+    if 'Rapporto_IC' not in df_log.columns:
+        return ["⚠️ Dati insufficienti per l'analisi: la colonna 'Rapporto_IC' manca nel diario."]
+    
     # Raggruppiamo per tipo di pasto
     for tipo in df_log['Tipo_Pasto'].unique():
         subset = df_log[df_log['Tipo_Pasto'] == tipo]
-        if len(subset) > 3: # Analizziamo solo se abbiamo almeno 3-4 pasti per categoria
-            # Se la glicemia pre è spesso ok ma post è alta (semplificazione), suggeriamo
-            # (Qui potresti incrociare col file Libre, per ora usiamo la logica del log)
-            suggerimenti.append(f"💡 Analisi per {tipo}: Se noti trend alti post-pasto, valuta di diminuire leggermente il tuo rapporto I:C (es. da {subset['Rapporto_IC'].iloc[-1]} a {subset['Rapporto_IC'].iloc[-1] - 1}).")
+        if len(subset) >= 3: 
+            # Prendiamo l'ultimo rapporto usato per quel pasto
+            ultimo_ic = subset['Rapporto_IC'].iloc[-1]
+            suggerimenti.append(f"💡 Analisi per {tipo}: Stai usando un rapporto I:C di 1:{ultimo_ic}. Se noti iperglicemia costante post-pasto, valuta con il tuo medico una riduzione (es. 1:{int(ultimo_ic)-1}).")
+    
+    if not suggerimenti:
+        return ["Registra almeno 3 pasti per ogni categoria per attivare i suggerimenti."]
     return suggerimenti
 
 def calcola_iob(df, ora_attuale, durata_azione_insulina=4):
