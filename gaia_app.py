@@ -27,9 +27,6 @@ with tab1:
         for s in genera_suggerimenti(df):
             st.info(s)
 
-
-
-
 with tab2:
     st.subheader("🍽️ Calcolatore Pasti Avanzato")
     
