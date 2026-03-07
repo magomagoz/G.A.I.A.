@@ -27,12 +27,19 @@ with tab1:
         for s in genera_suggerimenti(df):
             st.info(s)
 
+
+
+
 with tab2:
     st.subheader("🍽️ Calcolatore Pasti Avanzato")
     
-    # 1. Menu a tendina per il tipo di pasto
-    tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
+    # 1. Input di data, ora e glicemia attuale
+    col_a, col_b, col_c = st.columns(3)
+    data_pasto = col_a.date_input("Data del pasto", datetime.now().date())
+    ora_pasto = col_b.time_input("Ora del pasto", datetime.now().time())
+    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", min_value=30, max_value=600, value=120)
     
+    tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
     # 2. Caricamento del database alimenti
     # Creiamo un dizionario di default nel caso il file non esista ancora
     try:
@@ -63,33 +70,48 @@ with tab2:
     # Input per il rapporto Insulina:Carboidrati
     ic = st.number_input("Tuo rapporto I:C (es. 1 U ogni 10g)", value=10)
     
-    # 4. Tasto di calcolo
+    # 4. Tasto di calcolo aggiornato
     if st.button("Calcola glucosio e bolo"):
-        # Filtriamo solo le righe dove "Seleziona" è True
         alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
         
         if alimenti_selezionati.empty:
             st.warning("Per favore, flagga almeno un alimento dalla tabella.")
         else:
+            
             # Calcolo dei totali
             tot_carbs = alimenti_selezionati["Carboidrati (g)"].sum()
             dose_suggerita = tot_carbs / ic
+            #dose_carboidrati = tot_carbs / ic
+
+            # LOGICA DI CORREZIONE (opzionale): 
+            # Se la glicemia è sopra 150, aggiungiamo una correzione semplificata (es: 1U ogni 50mg/dL sopra il target di 120)
+            correzione = 0
+            if glicemia_pre > 150:
+                correzione = (glicemia_pre - 120) / 50
             
+            dose_totale = dose_carboidrati + correzione
+
             # Mostriamo i risultati
             st.markdown("---")
             st.write(f"**Riepilogo {tipo_pasto}:**")
             st.write(f"📝 **Alimenti scelti:** {', '.join(alimenti_selezionati['Alimento'].tolist())}")
             st.write(f"🍬 **Totale Carboidrati:** {tot_carbs} g")
-            st.success(f"💉 **Dose suggerita:** {dose_suggerita:.1f} unità di Novorapid")
-            
-            # --- NUOVA SEZIONE: SALVATAGGIO LOG ---
+            if correzione > 0:
+                st.write(f"✨ **Correzione glicemia:** +{correzione:.1f} U")
+            st.success(f"💉 **Dose totale suggerita:** {dose_totale:.1f} unità di Novorapid")
+
+            #st.success(f"💉 **Dose suggerita:** {dose_suggerita:.1f} unità di Novorapid")
+                    
+            # --- SALVATAGGIO CON NUOVI DATI ---
             nuovo_record = pd.DataFrame([{
-                "Data_Ora": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "Data_Ora": f"{data_pasto} {ora_pasto}",
+                "Glicemia_Pre": glicemia_pre,
                 "Tipo_Pasto": tipo_pasto,
                 "Alimenti": ', '.join(alimenti_selezionati['Alimento'].tolist()),
                 "Carboidrati_g": tot_carbs,
                 "Rapporto_IC": ic,
-                "Dose_Suggerita_U": round(dose_suggerita, 1)
+                
+                "Dose_Suggerita_U": round(dose_totale, 1)
             }])
             
             log_file = "log_pasti.csv"
