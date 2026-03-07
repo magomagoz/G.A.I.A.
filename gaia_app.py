@@ -9,8 +9,9 @@ from utils import (
 )
 import plotly.express as px
 
+st.set_page_config(page_title="Diabete Dashboard", layout="wide")
+
 st.image("banner.png")
-#st.set_page_config(page_title="Diabete Dashboard", layout="wide")
 
 # CSS per bottoni uniformi
 st.markdown("""
@@ -68,19 +69,34 @@ with tab2:
     except FileNotFoundError:
         db_alimenti = {"Pane": 50, "Pasta": 70, "Mela": 15}
     
-    df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati (g)"])
+    df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Quantità", "Carboidrati_Unitari"])
     df_alimenti.insert(0, "Seleziona", False)
+    df_alimenti["Quantità"] = 1.0  # Valore predefinito
+
+    edited_df = st.data_editor(
+    df_alimenti,
+    hide_index=True,
+    use_container_width=True,
+    column_config={
+        "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
+        "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
+        "Quantità": st.column_config.NumberColumn("Quantità", min_value=0.1, step=0.5, format="%.1f"),
+        "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
+    }
+)
+
     
     edited_df = st.data_editor(df_alimenti, hide_index=True, use_container_width=True)
-    
+
     if st.button("Calcola Dose Consigliata"):
         alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
         
         if alimenti_selezionati.empty:
             st.warning("Per favore, scegli almeno un alimento.")
-        else:
-            tot_carbs = alimenti_selezionati["Carboidrati (g)"].sum()
-            dose_carboidrati = tot_carbs / ic_calc
+    else:
+        # CALCOLO MATEMATICO: (Carboidrati unitari * Quantità)
+        tot_carbs = (selezione["Carboidrati_Unitari"] * selezione["Quantità"]).sum()
+        dose_carboidrati = tot_carbs / ic_calc
         
             modifica_trend = 0.0
             if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.5
@@ -93,14 +109,19 @@ with tab2:
             
             st.markdown("---")
             st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
+
+            # Creiamo una stringa descrittiva: "Supplì (x2), Pane (x1)"
+            descrizione_alimenti = ", ".join([
+                f"{row['Alimento']} (x{row['Quantità']})" for _, row in selezione.iterrows()
+            ])
             
-            # Salvataggio
             nuovo_record = pd.DataFrame([{
                 "Data_Ora": f"{data_pasto} {ora_pasto}",
                 "Glicemia_Pre": glicemia_pre,
+                "Trend": trend_libre,
                 "Tipo_Pasto": tipo_pasto,
-                "Alimenti": ', '.join(alimenti_selezionati['Alimento'].tolist()),
-                "Carboidrati_g": tot_carbs,
+                "Alimenti": descrizione_alimenti, # Ora include le quantità
+                "Carboidrati_g": tot_carbs,        # Questo è il totale già moltiplicato
                 "Rapporto_IC": ic_calc,
                 "Dose_Suggerita_U": round(dose_totale, 1)
             }])
