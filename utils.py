@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import os
 
 def elabora_dati(df):
     # Il file Libre richiede attenzione alle date e alla pulizia delle celle vuote
