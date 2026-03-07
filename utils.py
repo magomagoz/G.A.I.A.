@@ -9,6 +9,23 @@ def elabora_dati(df):
     df['Carboidrati (grammi)'] = pd.to_numeric(df['Carboidrati (grammi)'], errors='coerce').fillna(0)
     return df
 
+def calcola_iob(df, ora_attuale, durata_azione_insulina=4):
+    """
+    Calcola l'insulina ancora attiva (IOB) basandosi sull'ultima dose.
+    """
+    # Filtra solo i boli di Novorapid nelle ultime 'durata_azione_insulina' ore
+    tempo_limite = ora_attuale - pd.Timedelta(hours=durata_azione_insulina)
+    boli_recenti = df[(df['Timestamp'] > tempo_limite) & (df['Insulina ad azione rapida (unità)'] > 0)]
+    
+    iob = 0
+    for _, bolo in boli_recenti.iterrows():
+        tempo_trascorso = (ora_attuale - bolo['Timestamp']).total_seconds() / 3600
+        # Decadimento lineare semplificato (più sicuro e facile da gestire)
+        frazione_rimanente = 1 - (tempo_trascorso / durata_azione_insulina)
+        iob += bolo['Insulina ad azione rapida (unità)'] * max(0, frazione_rimanente)
+        
+    return iob
+
 def calcola_metriche(df, target_min, target_max):
     valori = df['Glucosio'].dropna()
     totale = len(valori)
