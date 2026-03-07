@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 import json
 import streamlit as st
 import pandas as pd
@@ -78,6 +80,37 @@ with tab2:
             st.write(f"📝 **Alimenti scelti:** {', '.join(alimenti_selezionati['Alimento'].tolist())}")
             st.write(f"🍬 **Totale Carboidrati:** {tot_carbs} g")
             st.success(f"💉 **Dose suggerita:** {dose_suggerita:.1f} unità di Novorapid")
+            
+            # --- NUOVA SEZIONE: SALVATAGGIO LOG ---
+            nuovo_record = pd.DataFrame([{
+                "Data_Ora": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "Tipo_Pasto": tipo_pasto,
+                "Alimenti": ', '.join(alimenti_selezionati['Alimento'].tolist()),
+                "Carboidrati_g": tot_carbs,
+                "Rapporto_IC": ic,
+                "Dose_Suggerita_U": round(dose_suggerita, 1)
+            }])
+            
+            log_file = "log_pasti.csv"
+            # Se il file esiste, aggiungiamo la riga (append), altrimenti lo creiamo
+            if os.path.exists(log_file):
+                nuovo_record.to_csv(log_file, mode='a', header=False, index=False)
+            else:
+                nuovo_record.to_csv(log_file, mode='w', header=True, index=False)
+                
+            st.info("💾 Pasto salvato automaticamente nel tuo Diario Digitale!")
 
+# --- AGGIORNAMENTO TAB 3 ---
 with tab3:
-    st.write("Qui caricheremo l'analisi storica dei picchi post-prandiali.")
+    st.subheader("📈 Analisi Trend e Diario Pasti")
+    
+    if os.path.exists("log_pasti.csv"):
+        df_log = pd.read_csv("log_pasti.csv")
+        st.write("**Il tuo storico pasti:**")
+        st.dataframe(df_log, use_container_width=True)
+    else:
+        st.write("Nessun pasto registrato finora. Usa il Calcolatore per iniziare!")
+        
+    st.markdown("---")
+    st.write("*Prossimamente: Qui incroceremo l'orario del pasto con la curva glicemica del file Libre.*")
+
