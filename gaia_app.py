@@ -140,7 +140,7 @@ with tab3:
 
     # --- IMPORTAZIONE ---
     # Usiamo un placeholder per mantenere lo stile identico
-    uploaded_file = col2.file_uploader("📥 Importa Diario", type="csv", label_visibility="collapsed")
+    uploaded_file = col1.file_uploader("📥 Importa Diario", type="csv", label_visibility="collapsed")
     
     if uploaded_file:
         with open("log_pasti.csv", "wb") as f:
