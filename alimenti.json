@@ -1,6 +1,10 @@
-{
-    "barretta Kinder": 12,
-    "succo di frutta": 20,
-    "panino medio": 45,
-    "mela media": 15
-}
+import os
+
+def get_carbs(nome_alimento):
+    if not os.path.exists('alimenti.json'):
+        # Dizionario di emergenza
+        return {"barretta Kinder": 12, "succo di frutta": 20, "panino": 45}.get(nome_alimento, 0)
+    
+    with open('alimenti.json', 'r') as f:
+        db = json.load(f)
+    return db.get(nome_alimento, 0)
