@@ -3,7 +3,34 @@ import os
 def get_carbs(nome_alimento):
     if not os.path.exists('alimenti.json'):
         # Dizionario di emergenza
-        return {"barretta Kinder": 12, "succo di frutta": 20, "panino": 45}.get(nome_alimento, 0)
+        return {
+            "Barretta Kinder": 12, 
+            "Succo di frutta": 20, 
+            "Panino con affettato": 45
+            "Pacchetto Patatine": 23
+            "Pacchetto Popcorn": 45
+            "Torta Rustica": 33
+            "Pasta al Pesto": 33
+            "Pasta al Tonno": 33
+            "Pasta al Pesto e Tonno": 88
+            "Pasta Olio e Parmigiano": 8
+            "Pasta al Pomodoro": 33
+            "Cotoletta panata": 44
+            "MacDonald's Menu": 55
+            "Sushi": 44
+            "Pizza tonda": 33
+            "Pizza Bianca": 66
+            "Bistecca": 22
+            "Sofficini": 33
+            "Olive ascolane": 22
+            "Brick Latte e Cacao": 44
+            "Biscotto Birillo al cacao": 55
+            "Suppli x 1": 44
+            "Suppli x 2": 88
+            "Patatine fritte ad aria": 55
+            "
+        
+        }.get(nome_alimento, 0)
     
     with open('alimenti.json', 'r') as f:
         db = json.load(f)
