@@ -121,38 +121,40 @@ with tab2:
             st.info("💾 Pasto salvato automaticamente nel tuo Diario Digitale!")
 
 with tab3:
-    st.subheader("📈 Analisi Trend Post-Prandiale")
-
-    #st.subheader("💾 Gestione Diario Pasti")
+    st.subheader("📈 Analisi Trend e Gestione Diario")
     
-    col_up, col_down = st.columns(2)
+    # 1. Creiamo le due colonne per i pulsanti affiancati
+    col1, col2 = st.columns(2)
     
     # --- ESPORTAZIONE (Download) ---
     if os.path.exists("log_pasti.csv"):
         df_log = pd.read_csv("log_pasti.csv")
         csv_data = df_log.to_csv(index=False).encode('utf-8')
-        col_down.download_button(
-            label="📥 Salva Diario",
+        col1.download_button(
+            label="📥 Esporta Diario (CSV)",
             data=csv_data,
             file_name='mio_diario_pasti.csv',
             mime='text/csv',
+            use_container_width=True # Rende il bottone largo quanto la colonna
         )
-    
-    # --- IMPORTAZIONE (Upload) ---
-    uploaded_log = col_up.file_uploader("Carica Diario", type="csv")
-    if uploaded_log is not None:
-        df_nuovo = pd.read_csv(uploaded_log)
-        df_nuovo.to_csv("log_pasti.csv", index=False)
-        st.success("✅ Diario caricato e salvato con successo!")
-        st.rerun() # Ricarica la pagina per mostrare i dati importati
-
-    # Verifichiamo se esiste il diario dei pasti
-    if os.path.exists("log_pasti.csv"):
-        df_log = pd.read_csv("log_pasti.csv")
+    else:
+        col1.warning("Nessun dato da esportare.")
         
-        if not df_log.empty:
-            st.write("**Il tuo storico pasti:**")
-            st.dataframe(df_log, use_container_width=True)
+    # --- IMPORTAZIONE (Upload) ---
+    uploaded_file = col2.file_uploader("Carica Diario (CSV)", type="csv")
+    if uploaded_file is not None:
+        df_nuovo = pd.read_csv(uploaded_file)
+        df_nuovo.to_csv("log_pasti.csv", index=False)
+        st.success("✅ Diario aggiornato con successo!")
+        st.rerun() # Ricarica l'app per mostrare subito il nuovo diario
+    
+    st.markdown("---")
+    
+    # 2. Visualizzazione del diario (solo se esiste)
+    if os.path.exists("log_pasti.csv"):
+        df_diario = pd.read_csv("log_pasti.csv")
+        st.write("**Il tuo storico pasti:**")
+        st.dataframe(df_diario, use_container_width=True)
             
             st.markdown("---")
             st.write("### 🔍 Analizza l'impatto di un pasto")
