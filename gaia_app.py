@@ -137,17 +137,7 @@ with tab3:
     st.subheader("📈 Analisi Trend e Gestione Diario")
     
     col1, col2 = st.columns(2)
-    
-    # --- ESPORTAZIONE ---
-    if os.path.exists("log_pasti.csv"):
-        with open("log_pasti.csv", "rb") as f:
-            col1.download_button(
-                label="📥 Esporta Diario",
-                data=f,
-                file_name="log_pasti.csv",
-                mime="text/csv"
-            )
-    
+
     # --- IMPORTAZIONE ---
     # Usiamo un placeholder per mantenere lo stile identico
     uploaded_file = col2.file_uploader("📥 Importa Diario", type="csv", label_visibility="collapsed")
@@ -158,6 +148,16 @@ with tab3:
         st.success("Diario aggiornato!")
         st.rerun()
     
+    # --- ESPORTAZIONE ---
+    if os.path.exists("log_pasti.csv"):
+        with open("log_pasti.csv", "rb") as f:
+            col1.download_button(
+                label="📥 Esporta Diario",
+                data=f,
+                file_name="log_pasti.csv",
+                mime="text/csv"
+            )
+        
     st.markdown("---")
     
     # 2. Visualizzazione del diario (solo se esiste)
