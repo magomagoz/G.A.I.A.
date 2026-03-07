@@ -23,12 +23,21 @@ with tab1:
             st.info(s)
 
 with tab2:
-    st.subheader("Calcolatore Bolo Rapido")
+    st.subheader("🍽️ Calcolatore Bolo Intelligente")
     cibo = st.selectbox("Seleziona alimento", ["Barretta Kinder (12g)", "Succo di frutta (20g)", "Panino (45g)"])
     ic = st.number_input("Tuo rapporto I:C (es. 10)", value=10)
+        
     if st.button("Calcola"):
-        carbs = int(cibo.split('(')[1].replace('g)', ''))
-        st.write(f"Dovresti somministrare circa {carbs/ic:.1f} unità di Novorapid.")
+        carbs = get_carbs(alimento_selezionato)
+        
+        dose_teorica = carbs / rapporto_ic
+        iob_attuale = calcola_iob(df, pd.Timestamp.now())
+        
+        dose_finale = max(0, dose_teorica - iob_attuale)
+        
+        st.write(f"Dose teorica: {dose_teorica:.1f} U")
+        st.write(f"Insulina già in corpo (IOB): {iob_attuale:.1f} U")
+        st.success(f"Dose suggerita (netta): **{dose_finale:.1f} unità di Novorapid**")
 
 with tab3:
     st.write("Qui caricheremo l'analisi storica dei picchi post-prandiali.")
