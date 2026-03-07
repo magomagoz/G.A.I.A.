@@ -200,3 +200,14 @@ with tab3:
                 st.error("Per visualizzare le curve dei pasti devi prima caricare il file CSV della Abbott nel Tab 'Dashboard'.")
     else:
         st.write("Nessun pasto registrato finora. Usa la tabella nel 'Calcolatore Pasti' per registrare il tuo primo pasto!")
+    
+    st.markdown("---")
+    st.write("### 🧠 Analisi Intelligente del Rapporto I:C")
+    
+    if os.path.exists("log_pasti.csv"):
+        df_log = pd.read_csv("log_pasti.csv")
+        suggerimenti_ic = suggerisci_aggiustamento_ic(df_log)
+        for s in suggerimenti_ic:
+            st.warning(s)
+    else:
+        st.write("Registra almeno 3-4 pasti per attivare l'analisi automatica del rapporto I:C.")
