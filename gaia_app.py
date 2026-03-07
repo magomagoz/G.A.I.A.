@@ -69,69 +69,71 @@ with tab2:
     except FileNotFoundError:
         db_alimenti = {"Pane": 50, "Pasta": 70, "Mela": 15}
     
-    df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Quantità", "Carboidrati_Unitari"])
+    # Carichiamo il dizionario (2 valori: nome e carboidrati)
+    df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati_Unitari"])
+    
+    # Aggiungiamo le altre colonne
     df_alimenti.insert(0, "Seleziona", False)
-    df_alimenti["Quantità"] = 1.0  # Valore predefinito
-
+    df_alimenti["Quantità"] = 1.0  # Inizializziamo a 1.0
+    
+    # Usiamo UN SOLO st.data_editor ben configurato
     edited_df = st.data_editor(
-    df_alimenti,
-    hide_index=True,
-    use_container_width=True,
-    column_config={
-        "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
-        "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
-        "Quantità": st.column_config.NumberColumn("Quantità", min_value=0.1, step=0.5, format="%.1f"),
-        "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
-    }
-)
+        df_alimenti,
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
+            "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
+            "Quantità": st.column_config.NumberColumn("Quantità", min_value=0.1, step=0.5, format="%.1f"),
+            "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
+        }
+    )
 
     
     edited_df = st.data_editor(df_alimenti, hide_index=True, use_container_width=True)
 
+    # --- BLOCCO CALCOLO CORRETTO ---
     if st.button("Calcola Dose Consigliata"):
         alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
         
         if alimenti_selezionati.empty:
             st.warning("Per favore, scegli almeno un alimento.")
-    else:
-        # CALCOLO MATEMATICO: (Carboidrati unitari * Quantità)
-        tot_carbs = (selezione["Carboidrati_Unitari"] * selezione["Quantità"]).sum()
-        dose_carboidrati = tot_carbs / ic_calc
-        
-        modifica_trend = 0.0
-        if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.5
-        elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.5
-        elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.5
-        elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.5
-            
-        correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
-        dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
-            
-        st.markdown("---")
-        st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
-
-        # Creiamo una stringa descrittiva: "Supplì (x2), Pane (x1)"
-        descrizione_alimenti = ", ".join([
-            f"{row['Alimento']} (x{row['Quantità']})" for _, row in selezione.iterrows()
-        ])
-            
-        nuovo_record = pd.DataFrame([{
-            "Data_Ora": f"{data_pasto} {ora_pasto}",
-            "Glicemia_Pre": glicemia_pre,
-            "Trend": trend_libre,
-            "Tipo_Pasto": tipo_pasto,
-            "Alimenti": descrizione_alimenti, # Ora include le quantità
-            "Carboidrati_g": tot_carbs,        # Questo è il totale già moltiplicato
-            "Rapporto_IC": ic_calc,
-            "Dose_Suggerita_U": round(dose_totale, 1)
-        }])
-            
-        log_file = "log_pasti.csv"
-        if os.path.exists(log_file):
-            nuovo_record.to_csv(log_file, mode='a', header=False, index=False)
         else:
-            nuovo_record.to_csv(log_file, mode='w', header=True, index=False)
+            # CALCOLO: Carboidrati Unitari * Quantità scelta nella tabella
+            tot_carbs = (alimenti_selezionati["Carboidrati_Unitari"] * alimenti_selezionati["Quantità"]).sum()
+            dose_carboidrati = tot_carbs / ic_calc
+            
+            # Gestione Trend
+            modifica_trend = 0.0
+            if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.5
+            elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.5
+            elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.5
+            elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.5
+                
+            correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
+            dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
+                
+            st.markdown("---")
+            st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
+    
+            # Descrizione per il diario: "Pasta (x1.0), Mela (x2.0)"
+            descrizione = ", ".join([f"{r['Alimento']} (x{r['Quantità']})" for _, r in alimenti_selezionati.iterrows()])
+                
+            nuovo_record = pd.DataFrame([{
+                "Data_Ora": f"{data_pasto} {ora_pasto}",
+                "Glicemia_Pre": glicemia_pre,
+                "Trend": trend_libre,
+                "Tipo_Pasto": tipo_pasto,
+                "Alimenti": descrizione,
+                "Carboidrati_g": tot_carbs,
+                "Rapporto_IC": ic_calc,
+                "Dose_Suggerita_U": round(dose_totale, 1)
+            }])
+                
+            log_file = "log_pasti.csv"
+            nuovo_record.to_csv(log_file, mode='a', header=not os.path.exists(log_file), index=False)
             st.info("💾 Pasto salvato!")
+
 
 with tab3:
     st.subheader("📈 Analisi Trend e Gestione Diario")
