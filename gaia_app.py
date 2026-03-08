@@ -82,30 +82,24 @@ with tab_profilo:
         # --- SEZIONE PULIZIA DATI ---
         st.markdown("---")
         st.subheader("⚠️ Area di Manutenzione")
-        # Sostituisci il tuo blocco di cancellazione con questo:
+        
         with st.expander("🗑️ Cancella tutti i dati dell'app"):
             st.warning("Questa operazione eliminerà permanentemente il tuo profilo e lo storico.")
             
-            # Campo di conferma
-            conferma = st.text_input("Scrivi 'ELIMINA' per confermare", key="input_elimina")
+            # Input di conferma
+            conferma_text = st.text_input("Scrivi 'ELIMINA' per confermare", key="check_elimina")
             
-            # Il bottone deve essere isolato
-            if st.button("Procedi con la cancellazione", key="bottone_elimina"):
-                if conferma == "ELIMINA":
+            # Bottone con chiave univoca
+            if st.button("Procedi con la cancellazione", key="btn_elimina_definitivo"):
+                if conferma_text == "ELIMINA":
                     files_da_eliminare = ["log_pasti.csv", "profilo.json"]
-                    deleted_any = False
                     for file in files_da_eliminare:
                         if os.path.exists(file):
                             os.remove(file)
-                            deleted_any = True
-                    if deleted_any:
-                        st.success("✅ Dati cancellati.")
-                        st.rerun() 
-                    else:
-                        st.info("ℹ️ Nessun file trovato.")
+                    st.success("✅ Dati cancellati. Ricarico l'app...")
+                    st.rerun() 
                 else:
-                    st.error("⚠️ Digita 'ELIMINA' nel campo sopra.")
-
+                    st.error("⚠️ Digita esattamente 'ELIMINA' nel campo sopra per sbloccare il tasto.")
 
 with tab1:
     #uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
