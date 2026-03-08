@@ -41,7 +41,7 @@ with tab1:
         
         st.subheader("🩺 Suggerimenti Clinici")
         for s in genera_suggerimenti(df):
-            st.info(s)
+            st.warning(s)
 
 with tab2:
     st.subheader("🍽️ Calcolatore Pasti & Bolo")
