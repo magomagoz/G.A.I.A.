@@ -119,11 +119,9 @@ with tab2:
             st.write(f"🍬 **Totale Carboidrati:** {tot_carbs} g")
             if correzione > 0:
                 st.write(f"✨ **Correzione glicemia:** +{correzione:.1f} U")
-            st.success(f"💉 **Dose totale suggerita:** {dose_totale:.1f} unità di Novorapid")
-
             
             st.markdown("---")
-            st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
+            st.success(f"💉 **Dose totale suggerita: {round(dose_totale, 1)} unità di Novorapid**")
     
             # Descrizione per il diario: "Pasta (x1.0), Mela (x2.0)"
             descrizione = ", ".join([f"{r['Alimento']} (x{r['Quantità']})" for _, r in alimenti_selezionati.iterrows()])
