@@ -297,17 +297,7 @@ with tab3:
         
         # Aggiungiamo un'interfaccia per eliminare le righe
         st.write("**Il tuo storico pasti:**")
-        
-        # Mostriamo il data editor per gestire la rimozione
-        edited_log = st.data_editor(
-            df_log,
-            hide_index=True, # Rimuove i numeri progressivi
-            use_container_width=True,
-            column_config={
-                "Azioni": st.column_config.CheckboxColumn("Elimina riga?", default=False)
-            }
-        )
-        
+                
         if st.button("💾 Conferma eliminazione righe selezionate"):
             # Manteniamo solo le righe dove NON è stato cliccato elimina
             df_log = df_log[~edited_log["Azioni"]]
