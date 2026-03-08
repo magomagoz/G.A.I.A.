@@ -41,10 +41,10 @@ with tab1:
         
         st.subheader("🩺 Suggerimenti Clinici")
         for s in genera_suggerimenti(df):
-            st.warning(s)
+            st.info(s)
 
 with tab2:
-    st.subheader("🍽️ Calcolatore Pasti & Bolo")
+    st.subheader("🍽️ Calcolatore Insulina")
 
     with st.expander("⚙️ **Parametri Basale e Sensibilità (Toujeo)**"):
         col_p1, col_p2 = st.columns(2)
@@ -59,7 +59,7 @@ with tab2:
     data_pasto = col_a.date_input("Data", datetime.now().date())
     ora_pasto = col_b.time_input("Ora", datetime.now().time())
     glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", value=120)
-    trend_libre = col_d.selectbox("Trend Libre", ["➡️ Stabile", "↗️ Salita lenta", "⬆️ Salita veloce", "↘️ Discesa lenta", "⬇️ Discesa veloce"])
+    trend_libre = col_d.selectbox("Trend misurazione", ["➡️ Stabile", "↗️ Salita lenta", "⬆️ Salita veloce", "↘️ Discesa lenta", "⬇️ Discesa veloce"])
 
     tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
 
@@ -88,12 +88,11 @@ with tab2:
             "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
         }
     )
-
-    
+ 
     edited_df = st.data_editor(df_alimenti, hide_index=True, use_container_width=True)
 
     # --- BLOCCO CALCOLO CORRETTO ---
-    if st.button("Calcola Dose Consigliata"):
+    if st.button("**Calcola Dose Consigliata**"):
         alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
         
         if alimenti_selezionati.empty:
@@ -134,7 +133,6 @@ with tab2:
             nuovo_record.to_csv(log_file, mode='a', header=not os.path.exists(log_file), index=False)
             st.info("💾 Pasto salvato!")
 
-
 with tab3:
     st.subheader("📈 Analisi Trend e Gestione Diario")
     col1, col2 = st.columns(2)
@@ -160,7 +158,7 @@ with tab3:
         st.dataframe(df_diario, use_container_width=True)
             
         st.markdown("---")
-        st.write("### 🔍 Analizza l'impatto di un pasto")
+        st.write("🔍 **Analizza l'impatto di un pasto**")
             
         # Creiamo un menu a tendina leggibile (es: "2023-11-20 13:00 - Pranzo (45g carbs)")
         opzioni_pasto = df_log['Data_Ora'] + " - " + df_log['Tipo_Pasto'] + " (" + df_log['Carboidrati_g'].astype(str) + "g carbs)"
@@ -227,7 +225,7 @@ with tab3:
         st.write("Nessun pasto registrato finora. Usa la tabella nel 'Calcolatore Pasti' per registrare il tuo primo pasto!")
     
     st.markdown("---")
-    st.write("### 🧠 Analisi Intelligente del Rapporto I:C")
+    st.write("🧠 **Analisi Intelligente del Rapporto I:C**")
     
     if os.path.exists("log_pasti.csv"):
         df_log = pd.read_csv("log_pasti.csv")
