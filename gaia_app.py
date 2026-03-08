@@ -111,7 +111,17 @@ with tab2:
                 
             correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
             dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
-                
+
+            # Mostriamo i risultati
+            st.markdown("---")
+            st.write(f"**Riepilogo {tipo_pasto}:**")
+            st.write(f"📝 **Alimenti scelti:** {', '.join(alimenti_selezionati['Alimento'].tolist())}")
+            st.write(f"🍬 **Totale Carboidrati:** {tot_carbs} g")
+            if correzione > 0:
+                st.write(f"✨ **Correzione glicemia:** +{correzione:.1f} U")
+            st.success(f"💉 **Dose totale suggerita:** {dose_totale:.1f} unità di Novorapid")
+
+            
             st.markdown("---")
             st.success(f"💉 Dose consigliata: **{round(dose_totale, 1)} Unità**")
     
