@@ -35,9 +35,9 @@ with tab1:
         df = elabora_dati(pd.read_csv(uploaded_file, skiprows=1))
         m = calcola_metriche(df, 70, 180)
         col1, col2, col3 = st.columns(3)
-        col1.metric("Time In Range", f"{m['TIR']:.1f}%")
-        col2.metric("Ipoglicemie", f"{m['IPO']:.1f}%")
-        col3.metric("Iperglicemie", f"{m['IPER']:.1f}%")
+        col1.metric("**TIME IN RANGE**", f"{m['TIR']:.1f}%")
+        col2.metric("**IPOGLICEMIE**", f"{m['IPO']:.1f}%")
+        col3.metric("**IPERGLICEMIE**", f"{m['IPER']:.1f}%")
         
         st.subheader("🩺 Suggerimenti Clinici")
         for s in genera_suggerimenti(df):
@@ -46,7 +46,7 @@ with tab1:
 with tab2:
     st.subheader("🍽️ Calcolatore Pasti & Bolo")
 
-    with st.expander("⚙️ Parametri Basale e Sensibilità (Toujeo)"):
+    with st.expander("⚙️ **Parametri Basale e Sensibilità (Toujeo)**"):
         col_p1, col_p2 = st.columns(2)
         basale_u = col_p1.number_input("Unità Toujeo (Basale)", value=36, step=1)
         tdi = basale_u * 2 
