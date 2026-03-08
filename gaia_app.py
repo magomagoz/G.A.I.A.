@@ -30,7 +30,7 @@ st.markdown("""
 tab1, tab2, tab3 = st.tabs(["📊 **Dashboard**", "🍽️ **Calcolatore Pasti**", "📈 **Analisi Trend**"])
 
 with tab1:
-    uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
+    #uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
     
     with st.expander("📂 Clicca per caricare il file CSV"):
         uploaded_file = st.file_uploader("Seleziona file", type="csv", label_visibility="collapsed")
@@ -79,35 +79,23 @@ with tab2:
     # 1. Campo di ricerca testuale
     search_term = st.text_input("🔍 Cerca alimento nel database", "").lower()
     
-    # 2. Caricamento e preparazione DataFrame (come prima)
+    # 2. Caricamento e preparazione DataFrame
     df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati_Unitari"])
     
-    # 3. Applichiamo il filtro di ricerca prima di mostrare la tabella
+    # 3. Applichiamo il filtro di ricerca
     if search_term:
         df_filtrato = df_alimenti[df_alimenti["Alimento"].str.lower().str.contains(search_term)]
     else:
         df_filtrato = df_alimenti
         
-    # 5. Visualizziamo la tabella filtrata
-    edited_df = st.data_editor(
-        df_filtrato,
-        hide_index=True,
-        use_container_width=True,
-        column_config={
-            "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
-            "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
-            "Quantità": st.column_config.NumberColumn("Quantità", min_value=0.1, step=0.5, format="%.1f"),
-            "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
-        }
-    )
+    # 4. Aggiungiamo le colonne Quantità e Seleziona AL DF FILTRATO
+    df_display = df_filtrato.copy() # Usiamo una copia per non avere warning da Pandas
+    df_display.insert(0, "Seleziona", False)
+    df_display["Quantità"] = 1.0 
     
-    # Aggiungiamo le altre colonne
-    df_alimenti.insert(0, "Seleziona", False)
-    df_alimenti["Quantità"] = 1.0  # Inizializziamo a 1.0
-    
-    # Usiamo UN SOLO st.data_editor ben configurato
+    # 5. Visualizziamo UN SOLO st.data_editor
     edited_df = st.data_editor(
-        df_alimenti,
+        df_display,
         hide_index=True,
         use_container_width=True,
         column_config={
@@ -117,8 +105,6 @@ with tab2:
             "Carboidrati_Unitari": st.column_config.NumberColumn("Carboidrati unitari", disabled=True)
         }
     )
- 
-    #edited_df = st.data_editor(df_alimenti, hide_index=True, use_container_width=True)
 
     # --- BLOCCO CALCOLO CORRETTO ---
     if st.button("**Calcola Dose Consigliata**"):
@@ -213,7 +199,7 @@ with tab3:
             
     # 2. Visualizzazione del diario (solo se esiste)
     if os.path.exists("log_pasti.csv"):
-        df_diario = pd.read_csv("log_pasti.csv")
+        #df_diario = pd.read_csv("log_pasti.csv")
         df_log = pd.read_csv("log_pasti.csv") # Assicurati che questa riga ci sia!
     
         st.write("**Il tuo storico pasti:**")
