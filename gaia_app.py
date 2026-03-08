@@ -42,7 +42,7 @@ with tab1:
         st.subheader("🩺 Suggerimenti Clinici")
         for s in genera_suggerimenti(df):
             st.info(s)
-
+            
 with tab2:
     st.subheader("🍽️ Calcolatore Insulina")
 
@@ -96,7 +96,6 @@ with tab2:
             "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
         }
     )
-
     
     # Aggiungiamo le altre colonne
     df_alimenti.insert(0, "Seleziona", False)
