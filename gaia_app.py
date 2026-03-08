@@ -79,27 +79,27 @@ with tab_profilo:
                     f"- **Rapporto I:C:** 1 Unità ogni **{round(ic_stimato, 1)}g** di carboidrati.\n"
                     f"- **ISF (Sensibilità):** 1 Unità abbassa la glicemia di **{round(isf_stimato, 1)} mg/dL**.")
 
-        # --- SEZIONE PULIZIA DATI ---
-        st.markdown("---")
-        st.subheader("⚠️ Area di Manutenzione")
+# --- SEZIONE PULIZIA DATI ---
+st.markdown("---")
+st.subheader("⚠️ Area di Manutenzione")
         
-        with st.expander("🗑️ Cancella tutti i dati dell'app"):
-            st.warning("Questa operazione eliminerà permanentemente il tuo profilo e lo storico.")
+with st.expander("🗑️ Cancella tutti i dati dell'app"):
+    st.warning("Questa operazione eliminerà permanentemente il tuo profilo e lo storico.")
             
-            # Input di conferma
-            conferma_text = st.text_input("Scrivi 'ELIMINA' per confermare", key="check_elimina")
+    # Input di conferma
+    conferma_text = st.text_input("Scrivi 'ELIMINA' per confermare", key="check_elimina")
             
-            # Bottone con chiave univoca
-            if st.button("Procedi con la cancellazione", key="btn_elimina_definitivo"):
-                if conferma_text == "ELIMINA":
-                    files_da_eliminare = ["log_pasti.csv", "profilo.json"]
-                    for file in files_da_eliminare:
-                        if os.path.exists(file):
-                            os.remove(file)
-                    st.success("✅ Dati cancellati. Ricarico l'app...")
-                    st.rerun() 
-                else:
-                    st.error("⚠️ Digita esattamente 'ELIMINA' nel campo sopra per sbloccare il tasto.")
+   # Bottone con chiave univoca
+    if st.button("Procedi con la cancellazione", key="btn_elimina_definitivo"):
+        if conferma_text == "ELIMINA":
+            files_da_eliminare = ["log_pasti.csv", "profilo.json"]
+            for file in files_da_eliminare:
+                if os.path.exists(file):
+                   os.remove(file)
+            st.success("✅ Dati cancellati. Ricarico l'app...")
+            st.rerun() 
+        else:
+           st.error("⚠️ Digita esattamente 'ELIMINA' nel campo sopra per sbloccare il tasto.")
 
 with tab1:
     #uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
