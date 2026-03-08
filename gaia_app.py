@@ -293,7 +293,7 @@ with tab3:
                 st.download_button("📤 Esporta CSV", data=f, file_name="mio_diario.csv", mime="text/csv")
             
     # 2. Visualizzazione del diario (solo se esiste)
-        df_log = pd.read_csv("log_pasti.csv")
+        #df_log = pd.read_csv("log_pasti.csv")
         
         # Aggiungiamo un'interfaccia per eliminare le righe
         st.write("**Il tuo storico pasti:**")
