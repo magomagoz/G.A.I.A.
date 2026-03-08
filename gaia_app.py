@@ -380,8 +380,8 @@ with tab3:
                 st.info("🕒 Nessun dato glicemico trovato nel sensore per le 3 ore successive a questo pasto. Assicurati che il CSV caricato copra questa data e orario.")
         elif 'df' not in locals() or df.empty:
             st.error("Per visualizzare le curve dei pasti devi prima caricare il file CSV della Abbott nel Tab 'Dashboard'.")
-    else:
-        st.write("Nessun pasto registrato finora. Usa la tabella nel 'Calcolatore Pasti' per registrare il tuo primo pasto!")
+    #else:
+        #st.write("Nessun pasto registrato finora. Usa la tabella nel 'Calcolatore Pasti' per registrare il tuo primo pasto!")
     
     st.markdown("---")
     st.write("🧠 **Analisi Intelligente del Rapporto I:C**")
