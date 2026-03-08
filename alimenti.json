@@ -34,7 +34,6 @@
     "Zucchero bianco (1 bustina)": 5,
     "Panino con affettato": 45,
     "Tramezzino prosciutto e Formaggio x 1": 30,
-    "Tramezzino prosciutto e Formaggio x 2": 60,
     "Pacchetto Patatine (sacchetto singolo 25g)": 15,
     "Pacchetto Popcorn (porzione 30g)": 20,
     "Torta Rustica (fetta 100g)": 25,
@@ -44,8 +43,8 @@
     "Pasta Olio e Parmigiano (80g pasta)": 65,
     "Pasta al Pomodoro (80g pasta)": 65,
     "Cotoletta panata (1 media)": 15,
-    "Hamburger x 2 (senza pane)": 5,
-    "Avocado toast x 2": 40,
+    "Hamburger (senza pane)": 5,
+    "Avocado toast": 20,
     "Sushi (8 pezzi/roll)": 40,
     "Pizza tonda margherita": 90,
     "Pizza Bianca (100g)": 55,
@@ -53,7 +52,6 @@
     "Olive ascolane (5 pezzi)": 15,
     "Brick Latte e Cacao (200ml)": 22,
     "Biscotto Birillo al cacao (1 pezzo)": 12,
-    "Suppli x 1": 25,
-    "Suppli x 2": 50,
+    "Suppli di riso": 25,
     "Patatine fritte ad aria (100g)": 30
 }
