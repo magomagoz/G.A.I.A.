@@ -71,6 +71,32 @@ with tab2:
     
     # Carichiamo il dizionario (2 valori: nome e carboidrati)
     df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati_Unitari"])
+
+    # 1. Campo di ricerca testuale
+    search_term = st.text_input("🔍 Cerca alimento nel database", "").lower()
+    
+    # 2. Caricamento e preparazione DataFrame (come prima)
+    df_alimenti = pd.DataFrame(list(db_alimenti.items()), columns=["Alimento", "Carboidrati_Unitari"])
+    
+    # 3. Applichiamo il filtro di ricerca prima di mostrare la tabella
+    if search_term:
+        df_filtrato = df_alimenti[df_alimenti["Alimento"].str.lower().str.contains(search_term)]
+    else:
+        df_filtrato = df_alimenti
+        
+    # 5. Visualizziamo la tabella filtrata
+    edited_df = st.data_editor(
+        df_filtrato,
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
+            "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
+            "Quantità": st.column_config.NumberColumn("Quantità", min_value=0.1, step=0.5, format="%.1f"),
+            "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
+        }
+    )
+
     
     # Aggiungiamo le altre colonne
     df_alimenti.insert(0, "Seleziona", False)
@@ -122,7 +148,32 @@ with tab2:
             
             st.markdown("---")
             st.success(f"💉 **Dose totale suggerita: {round(dose_totale, 1)} unità di Novorapid**")
-    
+
+            # --- AGGIUNTA GRAFICO RIPARTIZIONE BOLO ---
+            import plotly.graph_objects as go
+
+            # Prepariamo i dati per il grafico
+            etichette = ['Carboidrati', 'Correzione Glicemia', 'Aggiustamento Trend']
+            valori = [dose_carboidrati, correzione, max(0, modifica_trend)] 
+            # Usiamo max(0...) perché se il trend toglie insulina, non lo mostriamo nel grafico a torta
+            
+            fig_bolo = go.Figure(data=[go.Pie(
+                labels=etichette, 
+                values=valori, 
+                hole=.4,
+                marker_colors=['#00CC96', '#EF553B', '#636EFA']
+            )])
+            
+            fig_bolo.update_layout(
+                title_text="Ripartizione Unità Insulina",
+                annotations=[dict(text='Bolo', x=0.5, y=0.5, font_size=20, showarrow=False)],
+                showlegend=True,
+                height=350,
+                margin=dict(l=0, r=0, b=0, t=40)
+            )
+            
+            st.plotly_chart(fig_bolo, use_container_width=True)
+
             # Descrizione per il diario: "Pasta (x1.0), Mela (x2.0)"
             descrizione = ", ".join([f"{r['Alimento']} (x{r['Quantità']})" for _, r in alimenti_selezionati.iterrows()])
                 
