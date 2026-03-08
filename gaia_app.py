@@ -27,7 +27,57 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["📊 **Dashboard**", "🍽️ **Calcolatore Pasti**", "📈 **Analisi Trend**"])
+# Sostituisci la vecchia riga dei tab con questa:
+tab_profilo, tab1, tab2, tab3 = st.tabs(["👤 **Profilo**", "📊 **Dashboard**", "🍽️ **Calcolatore Pasti**", "📈 **Analisi Trend**"])
+
+with tab_profilo:
+    st.subheader("👤 Il tuo Profilo Clinico")
+    st.write("Inserisci i tuoi dati. L'app li ricorderà e li userà per suggerirti i parametri di partenza per i calcoli del bolo.")
+    
+    # 1. Carichiamo il profilo se esiste già
+    profilo = {}
+    if os.path.exists("profilo.json"):
+        with open("profilo.json", "r") as f:
+            profilo = json.load(f)
+            
+    # 2. Creiamo il modulo di inserimento
+    with st.form("form_profilo"):
+        colA, colB = st.columns(2)
+        nome = colA.text_input("Nome", value=profilo.get("nome", ""))
+        sesso = colB.selectbox("Sesso", ["Uomo", "Donna"], index=0 if profilo.get("sesso", "Uomo") == "Uomo" else 1)
+        eta = colA.number_input("Età", min_value=1, max_value=120, value=profilo.get("eta", 30))
+        peso = colB.number_input("Peso (kg)", min_value=20.0, max_value=200.0, value=profilo.get("peso", 80.0), step=0.5)
+        altezza = colA.number_input("Altezza (cm)", min_value=100, max_value=250, value=profilo.get("altezza", 175))
+        basale_attuale = colB.number_input("Unità di Toujeo (Basale) che fai ora", min_value=1, value=profilo.get("basale", 36))
+        
+        salva_profilo = st.form_submit_button("💾 Salva Profilo e Calcola Parametri")
+        
+        if salva_profilo:
+            # Calcolo empirico standard
+            tdi_stimato = peso * 0.55
+            ic_stimato = 500 / tdi_stimato
+            isf_stimato = 1800 / tdi_stimato
+            
+            nuovo_profilo = {
+                "nome": nome,
+                "sesso": sesso,
+                "eta": eta,
+                "peso": peso,
+                "altezza": altezza,
+                "basale": basale_attuale,
+                "ic_calcolato": round(ic_stimato, 1),
+                "isf_calcolato": round(isf_stimato, 1)
+            }
+            
+            # Salviamo i dati che l'app deve ricordare
+            with open("profilo.json", "w") as f:
+                json.dump(nuovo_profilo, f)
+                
+            st.success(f"✅ Profilo di {nome} salvato con successo!")
+            st.info(f"📊 In base al tuo peso di {peso}kg, il fabbisogno insulinico totale (TDI) teorico è di circa {round(tdi_stimato)} unità al giorno.\n\n"
+                    f"I tuoi parametri empirici suggeriti sono:\n"
+                    f"- **Rapporto I:C:** 1 Unità ogni **{round(ic_stimato, 1)}g** di carboidrati.\n"
+                    f"- **ISF (Sensibilità):** 1 Unità abbassa la glicemia di **{round(isf_stimato, 1)} mg/dL**.")
 
 with tab1:
     #uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
@@ -50,14 +100,22 @@ with tab1:
 with tab2:
     st.subheader("🍽️ Calcolatore Insulina")
 
-    with st.expander("⚙️ Parametri Basale e Sensibilità (Toujeo)"):
+    # Leggiamo i dati dal profilo salvato (se c'è), altrimenti usiamo valori standard
+    profilo_salvato = {}
+    if os.path.exists("profilo.json"):
+        with open("profilo.json", "r") as f:
+            profilo_salvato = json.load(f)
+            
+    default_ic = profilo_salvato.get("ic_calcolato", 10.0)
+    default_isf = profilo_salvato.get("isf_calcolato", 40.0)
+
+    with st.expander("⚙️ Parametri Personalizzati (Calcolati dal Profilo)"):
+        st.write("Questi valori sono precompilati in base al tuo peso, ma puoi modificarli per questo pasto se il medico ti ha dato indicazioni diverse.")
         col_p1, col_p2 = st.columns(2)
-        basale_u = col_p1.number_input("Unità Toujeo (Basale)", value=36, step=1)
-        tdi = basale_u * 2 
-        ic_calc = round(500 / tdi, 1)
-        isf_calc = round(1800 / tdi, 1)
-        st.caption(f"Rapporto I:C stimato: 1:{ic_calc} | ISF: {isf_calc} mg/dL")
-        target_glicemico = col_p2.number_input("Target Glicemia (mg/dL)", value=120)
+        # Precompiliamo i campi con i valori ricordati dall'app!
+        ic_calc = col_p1.number_input("Rapporto I:C (es. 10 = 1U ogni 10g)", value=float(default_ic), step=0.5)
+        isf_calc = col_p2.number_input("ISF (Fattore Sensibilità)", value=float(default_isf), step=1.0)
+        target_glicemico = col_p1.number_input("Target Glicemia (mg/dL)", value=120)
 
     col_a, col_b, col_c, col_d = st.columns([2, 2, 3, 2])
     data_pasto = col_a.date_input("Data", datetime.now().date())
