@@ -13,6 +13,10 @@ st.set_page_config(page_title="Diabete Dashboard", layout="wide")
 
 st.image("banner.png")
 
+# 1. Inizializzazione della lista pasti (da mettere all'inizio del file)
+if 'pasti_correnti' not in st.session_state:
+    st.session_state.pasti_correnti = []
+
 # CSS per bottoni uniformi
 st.markdown("""
     <style>
@@ -173,28 +177,26 @@ with tab2:
     df_display.insert(0, "Seleziona", False)
     df_display["Quantità"] = 1.0 
     
-    # 5. Visualizziamo UN SOLO st.data_editor
-    edited_df = st.data_editor(
-        df_display,
-        hide_index=True,
-        use_container_width=True,
-        column_config={
-            "Seleziona": st.column_config.CheckboxColumn("Seleziona", default=False),
-            "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
-            "Quantità": st.column_config.NumberColumn("Quantità", min_value=0.1, step=0.5, format="%.1f"),
-            "Carboidrati_Unitari": st.column_config.NumberColumn("Carboidrati unitari", disabled=True)
-        }
-    )
-
-    # --- BLOCCO CALCOLO CORRETTO ---
-    if st.button("**Calcola Dose Consigliata**"):
-        alimenti_selezionati = edited_df[edited_df["Seleziona"] == True]
-        
-        if alimenti_selezionati.empty:
-            st.warning("Per favore, scegli almeno un alimento.")
+    # 5. Visualizziamo lo st.data_editor
+    edited_df = st.data_editor(df_display, hide_index=True, use_container_width=True, ...)
+    
+    # Pulsante per accumulare
+    if st.button("➕ Aggiungi alimento selezionato"):
+        selezionati = edited_df[edited_df["Seleziona"] == True]
+        if not selezionati.empty:
+            st.session_state.pasti_correnti.extend(selezionati.to_dict('records'))
+            st.rerun() # Ricarica per mostrare subito la tabella aggiornata
         else:
-            # CALCOLO: Carboidrati Unitari * Quantità scelta nella tabella
-            tot_carbs = (alimenti_selezionati["Carboidrati_Unitari"] * alimenti_selezionati["Quantità"]).sum()
+            st.warning("Seleziona almeno un alimento nella tabella.")
+
+    # Visualizza la lista accumulata
+    if st.session_state.pasti_correnti:
+        df_accumulato = pd.DataFrame(st.session_state.pasti_correnti)
+        st.write("📋 **Alimenti nel tuo pasto:**", df_accumulato)
+        
+        if st.button("💉 **Calcola Dose Finale e Salva**"):
+            # Calcolo basato su df_accumulato (tutti gli alimenti aggiunti)
+            tot_carbs = (df_accumulato["Carboidrati_Unitari"] * df_accumulato["Quantità"]).sum()
             dose_carboidrati = tot_carbs / ic_calc
             
             # Gestione Trend
@@ -206,6 +208,11 @@ with tab2:
                 
             correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
             dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
+            
+            st.success(f"💉 Dose totale: {round(dose_totale, 1)} U")
+            
+            # Salvataggio nel log (usa descrizione da df_accumulato)
+            descrizione = ", ".join([f"{r['Alimento']} (x{r['Quantità']})" for _, r in df_accumulato.iterrows()])
 
             # Mostriamo i risultati
             st.markdown("---")
@@ -261,6 +268,14 @@ with tab2:
             nuovo_record.to_csv(log_file, mode='a', header=not os.path.exists(log_file), index=False)
             st.info("💾 Pasto salvato!")
 
+            # SVUOTA LA LISTA DOPO IL SALVATAGGIO
+            st.session_state.pasti_correnti = []
+            st.rerun()
+
+        if st.button("❌ Pulisci lista alimenti"):
+            st.session_state.pasti_correnti = []
+            st.rerun()
+            
 with tab3:
     st.subheader("📈 Analisi Trend e Gestione Diario")
     col1, col2 = st.columns(2)
@@ -278,11 +293,27 @@ with tab3:
                 st.download_button("📤 Esporta CSV", data=f, file_name="mio_diario.csv", mime="text/csv")
             
     # 2. Visualizzazione del diario (solo se esiste)
-    if os.path.exists("log_pasti.csv"):
-        #df_diario = pd.read_csv("log_pasti.csv")
-        df_log = pd.read_csv("log_pasti.csv") # Assicurati che questa riga ci sia!
-    
+        df_log = pd.read_csv("log_pasti.csv")
+        
+        # Aggiungiamo un'interfaccia per eliminare le righe
         st.write("**Il tuo storico pasti:**")
+        
+        # Mostriamo il data editor per gestire la rimozione
+        edited_log = st.data_editor(
+            df_log,
+            hide_index=True, # Rimuove i numeri progressivi
+            use_container_width=True,
+            column_config={
+                "Azioni": st.column_config.CheckboxColumn("Elimina riga?", default=False)
+            }
+        )
+        
+        if st.button("💾 Conferma eliminazione righe selezionate"):
+            # Manteniamo solo le righe dove NON è stato cliccato elimina
+            df_log = df_log[~edited_log["Azioni"]]
+            df_log.to_csv("log_pasti.csv", index=False)
+            st.rerun()
+    
         st.dataframe(df_log, use_container_width=True)
             
         st.markdown("---")
