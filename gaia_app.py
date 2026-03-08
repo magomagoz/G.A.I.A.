@@ -178,7 +178,7 @@ with tab2:
     df_display["Quantità"] = 1.0 
     
     # 5. Visualizziamo lo st.data_editor
-    edited_df = st.data_editor(df_display, hide_index=True, use_container_width=True, ...)
+    #edited_df = st.data_editor(df_display, hide_index=True, use_container_width=True, ...)
     
     # Pulsante per accumulare
     if st.button("➕ Aggiungi alimento selezionato"):
