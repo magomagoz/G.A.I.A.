@@ -261,7 +261,7 @@ with tab3:
         df_log = pd.read_csv("log_pasti.csv") # Assicurati che questa riga ci sia!
     
         st.write("**Il tuo storico pasti:**")
-        st.dataframe(df_diario, use_container_width=True)
+        st.dataframe(df_log, use_container_width=True)
             
         st.markdown("---")
         st.write("🔍 **Analizza l'impatto di un pasto**")
