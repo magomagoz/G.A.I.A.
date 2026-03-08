@@ -79,6 +79,29 @@ with tab_profilo:
                     f"- **Rapporto I:C:** 1 Unità ogni **{round(ic_stimato, 1)}g** di carboidrati.\n"
                     f"- **ISF (Sensibilità):** 1 Unità abbassa la glicemia di **{round(isf_stimato, 1)} mg/dL**.")
 
+            # --- SEZIONE PULIZIA DATI ---
+            st.markdown("---")
+            st.subheader("⚠️ Area di Manutenzione")
+            
+            # Usiamo un expander per non avere il tasto "pericoloso" sempre in bella vista
+            with st.expander("🗑️ Cancella tutti i dati dell'app"):
+                st.warning("Questa operazione eliminerà permanentemente il tuo profilo, lo storico dei pasti e il diario. Non è possibile annullare.")
+                
+                if st.button("Confermo: Elimina TUTTI i dati"):
+                    files_da_eliminare = ["log_pasti.csv", "profilo.json"]
+                    deleted_any = False
+                    
+                    for file in files_da_eliminare:
+                        if os.path.exists(file):
+                            os.remove(file)
+                            deleted_any = True
+                    
+                    if deleted_any:
+                        st.success("✅ Tutti i dati sono stati cancellati. Puoi ricominciare da zero!")
+                        st.rerun() # Ricarica l'app per pulire anche la memoria interna
+                    else:
+                        st.info("ℹ️ Non ci sono file di dati da eliminare.")
+
 with tab1:
     #uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
     
