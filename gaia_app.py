@@ -27,7 +27,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🍽️ Calcolatore Pasti", "📈 Analisi Trend"])
+tab1, tab2, tab3 = st.tabs(["📊 **Dashboard**", "🍽️ **Calcolatore Pasti**", "📈 **Analisi Trend**"])
 
 with tab1:
     uploaded_file = st.file_uploader("Carica il tuo CSV LibreView", type="csv")
