@@ -30,7 +30,11 @@ st.markdown("""
 tab1, tab2, tab3 = st.tabs(["📊 **Dashboard**", "🍽️ **Calcolatore Pasti**", "📈 **Analisi Trend**"])
 
 with tab1:
-    uploaded_file = st.file_uploader("Carica il tuo file LibreView", type="csv")
+    uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
+    
+    with st.expander("📂 Clicca per caricare il file CSV"):
+        uploaded_file = st.file_uploader("Seleziona file", type="csv", label_visibility="collapsed")
+
     if uploaded_file:
         df = elabora_dati(pd.read_csv(uploaded_file, skiprows=1))
         m = calcola_metriche(df, 70, 180)
