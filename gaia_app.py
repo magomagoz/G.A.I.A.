@@ -82,29 +82,30 @@ with tab_profilo:
         # --- SEZIONE PULIZIA DATI ---
         st.markdown("---")
         st.subheader("⚠️ Area di Manutenzione")
+        # Sostituisci il tuo blocco di cancellazione con questo:
         with st.expander("🗑️ Cancella tutti i dati dell'app"):
-            st.warning("Questa operazione eliminerà permanentemente il tuo profilo e lo storico. Non è possibile annullare.")
+            st.warning("Questa operazione eliminerà permanentemente il tuo profilo e lo storico.")
             
-            # Aggiungiamo un check di sicurezza testuale
-            conferma = st.text_input("Scrivi 'ELIMINA' per confermare")
+            # Campo di conferma
+            conferma = st.text_input("Scrivi 'ELIMINA' per confermare", key="input_elimina")
             
-            if st.button("Procedi con la cancellazione"):
+            # Il bottone deve essere isolato
+            if st.button("Procedi con la cancellazione", key="bottone_elimina"):
                 if conferma == "ELIMINA":
                     files_da_eliminare = ["log_pasti.csv", "profilo.json"]
                     deleted_any = False
-                    
                     for file in files_da_eliminare:
                         if os.path.exists(file):
                             os.remove(file)
                             deleted_any = True
-                    
                     if deleted_any:
-                        st.success("✅ Dati cancellati correttamente.")
-                        st.rerun()
+                        st.success("✅ Dati cancellati.")
+                        st.rerun() 
                     else:
-                        st.info("ℹ️ Nessun dato presente da eliminare.")
+                        st.info("ℹ️ Nessun file trovato.")
                 else:
-                    st.error("⚠️ Digita esattamente 'ELIMINA' nel campo qui sopra per abilitare il tasto.")
+                    st.error("⚠️ Digita 'ELIMINA' nel campo sopra.")
+
 
 with tab1:
     #uploaded_file = st.file_uploader("📥 Carica il tuo file LibreView", type="csv", label_visibility="visible")
