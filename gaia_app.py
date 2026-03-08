@@ -46,7 +46,7 @@ with tab1:
 with tab2:
     st.subheader("🍽️ Calcolatore Insulina")
 
-    with st.expander("⚙️ **Parametri Basale e Sensibilità (Toujeo)**"):
+    with st.expander("⚙️ Parametri Basale e Sensibilità (Toujeo)"):
         col_p1, col_p2 = st.columns(2)
         basale_u = col_p1.number_input("Unità Toujeo (Basale)", value=36, step=1)
         tdi = basale_u * 2 
