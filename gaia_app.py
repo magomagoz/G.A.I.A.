@@ -30,7 +30,7 @@ st.markdown("""
 tab1, tab2, tab3 = st.tabs(["📊 **Dashboard**", "🍽️ **Calcolatore Pasti**", "📈 **Analisi Trend**"])
 
 with tab1:
-    uploaded_file = st.file_uploader("Carica il tuo CSV LibreView", type="csv")
+    uploaded_file = st.file_uploader("Carica il tuo file LibreView", type="csv")
     if uploaded_file:
         df = elabora_dati(pd.read_csv(uploaded_file, skiprows=1))
         m = calcola_metriche(df, 70, 180)
@@ -82,10 +82,10 @@ with tab2:
         hide_index=True,
         use_container_width=True,
         column_config={
-            "Seleziona": st.column_config.CheckboxColumn("Aggiungi", default=False),
+            "Seleziona": st.column_config.CheckboxColumn("Seleziona", default=False),
             "Alimento": st.column_config.TextColumn("Alimento", disabled=True),
             "Quantità": st.column_config.NumberColumn("Quantità", min_value=0.1, step=0.5, format="%.1f"),
-            "Carboidrati_Unitari": st.column_config.NumberColumn("Carb (x1)", disabled=True)
+            "Carboidrati_Unitari": st.column_config.NumberColumn("Carboidrati unitari", disabled=True)
         }
     )
  
