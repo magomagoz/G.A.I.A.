@@ -89,7 +89,7 @@ with tab2:
         }
     )
  
-    edited_df = st.data_editor(df_alimenti, hide_index=True, use_container_width=True)
+    #edited_df = st.data_editor(df_alimenti, hide_index=True, use_container_width=True)
 
     # --- BLOCCO CALCOLO CORRETTO ---
     if st.button("**Calcola Dose Consigliata**"):
