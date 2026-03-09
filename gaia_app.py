@@ -44,7 +44,7 @@ with tab_profilo:
             
     with st.form("form_profilo"):
         colA, colB = st.columns(2)
-        nome = colA.text_input("Nome", value=profilo.get("nome", ""))
+        nome = colA.text_input("Nome", value=profilo.get("nome", "Elena"))
         sesso = colB.selectbox("Sesso", ["Donna", "Uomo"], index=0 if profilo.get("sesso", "Donna") == "Donna" else 1)
         eta = colA.number_input("Età", min_value=1, max_value=120, value=profilo.get("eta", 22))
         peso = colB.number_input("Peso (kg)", min_value=20.0, max_value=200.0, value=profilo.get("peso", 64.0), step=0.5)
