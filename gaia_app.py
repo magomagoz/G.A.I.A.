@@ -54,7 +54,7 @@ with tab_profilo:
         salva_profilo = st.form_submit_button("💾 Salva Profilo e Calcola Parametri")
         
         if salva_profilo:
-            tdi_stimato = peso * 0.6
+            tdi_stimato = peso * 0.5
             ic_stimato = 500 / tdi_stimato
             isf_stimato = 1664 / tdi_stimato
             
