@@ -54,7 +54,7 @@ with tab_profilo:
         salva_profilo = st.form_submit_button("💾 Salva Profilo e Calcola Parametri")
         
         if salva_profilo:
-            tdi_stimato = peso * 0.52
+            tdi_stimato = peso * 0.5
             ic_stimato = 500 / tdi_stimato
             isf_stimato = 1600 / tdi_stimato
             
@@ -133,7 +133,7 @@ with tab2:
     col_a, col_b, col_c, col_d = st.columns([2, 2, 3, 2])
     data_pasto = col_a.date_input("Data", datetime.now().date())
     ora_pasto = col_b.time_input("Ora", datetime.now().time())
-    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", value=140)
+    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", value=150)
     trend_libre = col_d.selectbox("Trend misurazione", ["➡️ Stabile", "↗️ Salita lenta", "⬆️ Salita veloce", "↘️ Discesa lenta", "⬇️ Discesa veloce"])
 
     tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
