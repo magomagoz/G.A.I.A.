@@ -56,7 +56,7 @@ with tab_profilo:
         if salva_profilo:
             tdi_stimato = peso * 0.52
             ic_stimato = 500 / tdi_stimato
-            isf_stimato = 1664 / tdi_stimato
+            isf_stimato = 1600 / tdi_stimato
             
             nuovo_profilo = {
                 "nome": nome,
