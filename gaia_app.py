@@ -128,7 +128,7 @@ with tab2:
         col_p1, col_p2 = st.columns(2)
         ic_calc = col_p1.number_input("Rapporto I:C (es. 10 = 1U ogni 10g)", value=float(default_ic), step=0.5)
         isf_calc = col_p2.number_input("ISF (Fattore Sensibilità)", value=float(default_isf), step=1.0)
-        target_glicemico = col_p1.number_input("Target Glicemia (mg/dL)", value=130)
+        target_glicemico = col_p1.number_input("Target Glicemia (mg/dL)", value=140)
 
     col_a, col_b, col_c, col_d = st.columns([2, 2, 3, 2])
     data_pasto = col_a.date_input("Data", datetime.now().date())
