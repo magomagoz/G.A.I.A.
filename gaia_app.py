@@ -49,12 +49,12 @@ with tab_profilo:
         eta = colA.number_input("Età", min_value=1, max_value=120, value=profilo.get("eta", 22))
         peso = colB.number_input("Peso (kg)", min_value=20.0, max_value=200.0, value=profilo.get("peso", 64.0), step=0.5)
         altezza = colA.number_input("Altezza (cm)", min_value=100, max_value=250, value=profilo.get("altezza", 172))
-        basale_attuale = colB.number_input("Unità di Toujeo (Basale) che fai ora", min_value=1, value=profilo.get("basale", 36))
+        basale_attuale = colB.number_input("Unità di Toujeo (Basale) che fai ora", min_value=1, value=profilo.get("basale", 32))
         
         salva_profilo = st.form_submit_button("💾 Salva Profilo e Calcola Parametri")
         
         if salva_profilo:
-            tdi_stimato = peso * 0.52
+            tdi_stimato = peso * 0.6
             ic_stimato = 500 / tdi_stimato
             isf_stimato = 1664 / tdi_stimato
             
