@@ -186,10 +186,10 @@ with tab2:
             dose_carboidrati = tot_carbs / ic_calc
             
             modifica_trend = 0.0
-            if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.0
-            elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.5
-            elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.5
-            elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.0
+            if trend_libre == "⬆️ Salita veloce": modifica_trend = 0.7
+            elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.3
+            elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.3
+            elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -0.7
                 
             correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
             dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
