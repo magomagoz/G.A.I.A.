@@ -133,7 +133,7 @@ with tab2:
     col_a, col_b, col_c, col_d = st.columns([2, 2, 3, 2])
     data_pasto = col_a.date_input("Data", datetime.now().date())
     ora_pasto = col_b.time_input("Ora", datetime.now().time())
-    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", value=120)
+    glicemia_pre = col_c.number_input("Glicemia attuale (mg/dL)", value=140)
     trend_libre = col_d.selectbox("Trend misurazione", ["➡️ Stabile", "↗️ Salita lenta", "⬆️ Salita veloce", "↘️ Discesa lenta", "⬇️ Discesa veloce"])
 
     tipo_pasto = st.selectbox("Momento della giornata", ["Colazione", "Pranzo", "Cena", "Spuntino"])
@@ -186,10 +186,10 @@ with tab2:
             dose_carboidrati = tot_carbs / ic_calc
             
             modifica_trend = 0.0
-            if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.5
+            if trend_libre == "⬆️ Salita veloce": modifica_trend = 1.0
             elif trend_libre == "↗️ Salita lenta": modifica_trend = 0.5
             elif trend_libre == "↘️ Discesa lenta": modifica_trend = -0.5
-            elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.5
+            elif trend_libre == "⬇️ Discesa veloce": modifica_trend = -1.0
                 
             correzione = (glicemia_pre - target_glicemico) / isf_calc if glicemia_pre > target_glicemico else 0
             dose_totale = max(0, dose_carboidrati + correzione + modifica_trend)
